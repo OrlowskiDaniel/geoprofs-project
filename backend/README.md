@@ -16,20 +16,8 @@ composer create-project laravel/laravel backend
 cd backend
 ```
 
-## 2. Copy these files into the fresh project
 
-Copy from this demo into your new Laravel project, overwriting where needed:
-
-```
-routes/api.php                                            -> routes/api.php
-app/Http/Controllers/HelloController.php                  -> app/Http/Controllers/HelloController.php
-app/Models/Greeting.php                                   -> app/Models/Greeting.php
-database/migrations/2026_01_01_000000_create_greetings_table.php -> database/migrations/...
-database/seeders/DatabaseSeeder.php                        -> database/seeders/DatabaseSeeder.php
-.env.example                                               -> merge into your .env
-```
-
-## 3. Configure the database
+## 2. Configure the database
 
 1. Create a MySQL database called `geoprofs` (or run the `docker-compose.yml`
    at the repo root, which spins up MySQL for you).
@@ -39,7 +27,7 @@ database/seeders/DatabaseSeeder.php                        -> database/seeders/D
    php artisan key:generate
    ```
 
-## 4. Enable CORS for React (and later WPF)
+## 3. Enable CORS for React (and later WPF)
 
 Laravel 11+ ships CORS config at `config/cors.php`. Make sure it allows your
 frontend origin:
@@ -48,7 +36,7 @@ frontend origin:
 'allowed_origins' => ['http://localhost:5173'],
 ```
 
-## 5. Migrate + seed + run
+## 4. Migrate + seed + run
 
 ```bash
 php artisan migrate
