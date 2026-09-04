@@ -1,4 +1,4 @@
-// Tiny wrapper around fetch so every component talks to the API the same way.
+// Tiny wrapper around fetch so every component talks to the API.
 // In dev, Vite proxies /api to the Laravel server (see vite.config.js).
 const BASE_URL = "/api";
 
