@@ -1,9 +1,7 @@
 # GeoProfs — hello world scaffold
 
 A minimal, working skeleton of the full stack: **React ⇄ Laravel ⇄ MySQL**,
-plus a **WPF** app calling the same Laravel API. The goal isn't features —
-it's proving every piece of the chain talks to the next one correctly,
-before you build the real, big project on top of it.
+plus a **WPF** app calling the same Laravel API.
 
 ## The chain, in one picture
 
@@ -17,11 +15,11 @@ before you build the real, big project on top of it.
                      │
                      ▼
                   MySQL
-           (greetings table)
+           
 ```
 
 Both clients call the *same* endpoint, the *same* way. Neither ever talks
-to MySQL directly — Laravel is the single source of truth for data and
+to MySQL directly - Laravel is the single source of truth for data and
 business rules. That's the one architectural rule to protect as the real
 project grows: **all logic lives in Laravel; React and WPF are just UI.**
 
@@ -39,7 +37,7 @@ geoprofs-demo/
 └── .gitignore
 ```
 
-## Quickest path to seeing it work end-to-end
+## Setup
 
 1. **Database** — either install MySQL locally, or:
    ```bash
