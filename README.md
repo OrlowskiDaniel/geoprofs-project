@@ -45,14 +45,10 @@ geoprofs-demo/
    ```
 2. **Backend** — see `backend/README.md` in full, short version:
    ```bash
-   composer create-project laravel/laravel backend-real
-   # copy routes/api.php, app/Http/Controllers/HelloController.php,
-   # app/Models/Greeting.php, the migration, and the seeder from
-   # this backend/ folder into backend-real/
-   cd backend-real
-   php artisan migrate
-   php artisan db:seed
-   php artisan serve
+   composer install
+   # change .env.example to .env run
+   php artisan key:generate
+   # configure .env
    ```
 3. **React**:
    ```bash
@@ -60,13 +56,10 @@ geoprofs-demo/
    npm install
    npm run dev
    ```
-   Visit `http://localhost:5173` — you'll see the greeting that Laravel
-   read out of MySQL.
+   
 4. **WPF** (Windows only): open `desktop/GeoProfs.Desktop.csproj` in
    Visual Studio and run it. Same greeting, fetched independently.
 
-If all three show the same message, the whole chain works and you're
-ready to build real features on top of this shape.
 
 ## Why this exact stack combination
 
@@ -84,13 +77,3 @@ ready to build real features on top of this shape.
 - **REST + `docs/API.md`** — the contract the whole team agrees on so
   frontend, backend and desktop work can happen in parallel.
 
-## Next steps for the real project
-
-1. Turn `docs/API.md`'s "planned endpoints" table into real Laravel routes,
-   one feature at a time, following the `Greeting` example (migration →
-   model → controller → route → update the doc).
-2. Mirror each new endpoint in `frontend/src/api/client.js` and
-   `desktop/GeoProfs.Desktop/Services/GeoProfsApiClient.cs`.
-3. Add authentication (Laravel Sanctum is the natural fit for both a
-   browser SPA and a desktop app calling a token-based API).
-4. Read `docs/GITHUB_WORKFLOW.md` before the team starts committing.
