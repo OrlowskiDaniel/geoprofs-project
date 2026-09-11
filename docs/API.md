@@ -1,7 +1,7 @@
 # API contract
 
 This is the "shared language" between the React team and the WPF/backend
-work — agree on this before writing client code, so everyone can build in
+work - agree on this before writing client code, so everyone can build in
 parallel. Update this file every time you add or change an endpoint.
 
 ## Conventions
@@ -12,7 +12,7 @@ parallel. Update this file every time you add or change an endpoint.
 - Errors return a JSON body: `{ "message": "...", "errors": { ... } }` with
   the appropriate HTTP status code (422 validation, 401 unauthorized, etc.).
 
-## Endpoints implemented in this demo
+## Endpoints example
 
 ### `GET /api/hello`
 
@@ -45,5 +45,5 @@ Returns a greeting pulled from MySQL. Used to prove the full chain works.
 | GET    | /api/planning/department    | Department absence overview       |
 
 Once the team is ready, generate this automatically from code with
-[Laravel Scramble](https://scramble.dedoc.co/) or `darkaonline/l5-swagger`
+[Laravel Scramble](https://scramble.dedoc.co/)(Swagger)
 so the OpenAPI spec never drifts from the real routes.

@@ -46,11 +46,9 @@ Boost provides your agent 15+ tools and skills that help agents build Laravel ap
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
+
+
 ## Code of Conduct
-
-
-## 2. Configure the database
-
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
@@ -72,19 +70,18 @@ php artisan db:seed
 php artisan serve
 ```
 
-Laravel now runs at `http://127.0.0.1:8000`. Test it directly:
+Laravel now runs at `http://127.0.0.1:8000`.
 
-```bash
-curl http://127.0.0.1:8000/api/hello
-```
+## 5. Backend Setup 
 
-You should get back JSON with a `message` field pulled from the `greetings`
-table in MySQL — that's your full backend -> database round trip working.
+run `composer install` to generate depedencies in vendor folder
+change `.env.example` to `.env`
+run `php artisan key:generate`
+configure `.env`
 
-## Where things grow from here
+## 6. php.ini configuration if needed
 
-- New feature = new migration + model + controller + route, following the
-  `Greeting` example.
-- Keep all business logic in the Controller/Service layer, never in React or
-  WPF — see `/docs/API.md` at the repo root for the planned endpoint contract.
+Uncomment this extension:
+
+extension=mysqli
 
