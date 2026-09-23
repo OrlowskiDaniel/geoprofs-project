@@ -1,13 +1,56 @@
-import { useEffect, useState } from "react";
-import { api } from "./api/client";
+import { useState } from "react";
 
 export default function App() {
-  const [message, setMessage] = useState("Loading...");
-  const [error, setError] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    // Connect the authentication API here when the backend is ready.
+    setMessage("The login form is ready. Authentication will be available once the backend is connected.");
+  }
 
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <h1>GeoProfs — React Client</h1>
-    </div>
+    <main className="login-page">
+      <div className="login-card">
+        <div className="login-logo">GP</div>
+        <h1>Login</h1>
+        <p className="login-description">Log in to continue.</p>
+
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="email">Email address</label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+
+          <button type="submit">Log in</button>
+        </form>
+
+        {message && (
+          <p className="login-message" role="status">
+            {message}
+          </p>
+        )}
+      </div>
+    </main>
   );
 }
