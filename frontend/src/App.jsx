@@ -9,7 +9,7 @@ export default function App() {
     event.preventDefault();
 
     // Connect the authentication API here when the backend is ready.
-    setMessage("The login form is ready. Authentication will be available once the backend is connected.");
+    setMessage("This is just a form");
   }
 
   return (
