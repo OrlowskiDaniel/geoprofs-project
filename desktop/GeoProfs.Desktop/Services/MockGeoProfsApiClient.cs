@@ -16,7 +16,7 @@ namespace GeoProfs.Desktop.Services
     // ViewModels/Views needs to change.
     public class MockGeoProfsApiClient : IGeoProfsApiClient
     {
-        // Simulates realistic network latency so loading states are visible.
+        // Simulates realistic network latency so loading states are visible
         private static readonly TimeSpan SimulatedDelay = TimeSpan.FromMilliseconds(500);
 
         private readonly List<LeaveRequest> _requests = new()
@@ -30,7 +30,7 @@ namespace GeoProfs.Desktop.Services
         public async Task<List<LeaveRequest>> GetPendingApprovalsAsync()
         {
             await Task.Delay(SimulatedDelay);
-            // Real endpoint only returns pending ones; mirror that here.
+            // Real endpoint only returns pending ones; mirror that here
             return _requests.Where(r => r.Status == "Pending").ToList();
         }
 
