@@ -49,6 +49,7 @@ geoprofs-demo/
    # change .env.example to .env run
    php artisan key:generate
    # configure .env
+   php artisan serve
    ```
 3. **React**:
    ```bash
