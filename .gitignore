@@ -19,3 +19,4 @@ desktop/**/obj/
 .DS_Store
 .vscode/
 .idea/
+.vs
