@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { api } from "./api/client";
 
+
+
 export default function App() {
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
