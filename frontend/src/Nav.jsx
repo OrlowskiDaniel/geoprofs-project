@@ -1,20 +1,24 @@
-import { useEffect, useState } from "react";
-import { api } from "./api/client";
-import Logo from './assets/FinalProfs.png';
+import { Link } from "react-router-dom";
+import Logo from "./assets/FinalProfs.png";
 
-export default function App() {
-  const [message, setMessage] = useState("Loading...");
-  const [error, setError] = useState(null);
-
+export default function Nav() {
   return (
     <div style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <div className="flex flex-row items-center h-16 w-full bg-[#2D898B] px-6">
-        <img
+      <div className="flex flex-row items-center h-16 w-full bg-[#6D28D9] px-6">
+        
+        <Link to="/Home">
+          <img
             src={Logo}
             alt="GeoProfs"
             className="h-12 w-auto"
-        />
-        </div>
+          />
+        </Link>
+
+        <nav>
+          <Link to="/profile">Profile</Link>
+        </nav>
+
+      </div>
     </div>
   );
 }

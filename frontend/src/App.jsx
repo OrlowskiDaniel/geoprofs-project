@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
-import { api } from "./api/client";
+import { Routes, Route } from "react-router-dom";
+import Profile from "./Profile.jsx";
+import Home from "./Home.jsx";
+import Login from "./Login.jsx";
 
 export default function App() {
-  const [message, setMessage] = useState("Loading...");
-  const [error, setError] = useState(null);
-
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <h1>GeoProfs — React Client</h1>
-    </div>
+    <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/home" element={<Home />} />
+    </Routes>
   );
 }
