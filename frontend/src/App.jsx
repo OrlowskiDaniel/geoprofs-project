@@ -26,7 +26,7 @@ export default function App() {
           Welcome to GeoProfs
         </h1>
         <p className="mb-[30px] text-[#6b7280]">
-          Sign in to continue.
+          Login to continue.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col">
@@ -62,7 +62,7 @@ export default function App() {
             type="submit"
             className="w-full cursor-pointer rounded-[10px] bg-[#6d28d9] p-[14px] font-semibold text-white hover:bg-[#5b21b6] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#8b5cf6]"
           >
-            Sign in
+            Log in
           </button>
         </form>
 
