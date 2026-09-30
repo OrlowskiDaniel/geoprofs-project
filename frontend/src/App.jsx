@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Profile from "./Profile.jsx";
 import Home from "./Home.jsx";
 import Login from "./Login.jsx";
+import AbsenceRequest from "./AbsenceRequest.jsx";
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
         <Route path="/" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/request" element={<AbsenceRequest />} />
     </Routes>
   );
 }

@@ -16,6 +16,7 @@ export default function Nav() {
 
         <nav>
           <Link to="/profile">Profile</Link>
+          <Link to="/request">Leave request</Link>
         </nav>
 
       </div>
