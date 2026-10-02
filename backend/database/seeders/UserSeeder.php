@@ -26,8 +26,8 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             'role_id' => $werknemerRoleId,
             'user_credit_id' => $credId,
-            'first_name' => 'Jan',
-            'last_name' => 'Jansen',
+            'first_name' => 'Ballerina',
+            'last_name' => 'Capuchina',
             'remarks' => '',
             'must_change_password' => false,
             'active' => true,
@@ -47,8 +47,8 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             'role_id' => $managerRoleId,
             'user_credit_id' => $credId,
-            'first_name' => 'Piet',
-            'last_name' => 'Peters',
+            'first_name' => 'Ta Ta Ta Ta',
+            'last_name' => 'Sahur',
             'remarks' => '',
             'must_change_password' => false,
             'active' => true,
@@ -68,8 +68,8 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             'role_id' => $officeManagerRoleId,
             'user_credit_id' => $credId,
-            'first_name' => 'Kees',
-            'last_name' => 'Bakker',
+            'first_name' => 'Bombardino',
+            'last_name' => 'Crocodilo',
             'remarks' => '',
             'must_change_password' => false,
             'active' => true,
@@ -89,8 +89,8 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             'role_id' => $administratorRoleId,
             'user_credit_id' => $credId,
-            'first_name' => 'Admin',
-            'last_name' => 'User',
+            'first_name' => 'Tung Tung Tung',
+            'last_name' => 'Sahur',
             'remarks' => '',
             'must_change_password' => false,
             'active' => true,
