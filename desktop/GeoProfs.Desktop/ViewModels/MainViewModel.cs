@@ -1,54 +1,57 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+using System.Windows.Input;
+using GeoProfs.Desktop.Common;
 using GeoProfs.Desktop.Services;
 
 namespace GeoProfs.Desktop.ViewModels
 {
-    /// <summary>
-    /// This is the "brain" behind MainWindow.xaml. The View knows nothing
-    /// about HttpClient or JSON — it only binds to Message/IsError.
-    /// Same layering idea as React: View -> ViewModel -> Service -> API.
-    /// </summary>
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : ViewModelBase
     {
-        private readonly GeoProfsApiClient _api = new();
+        private readonly IGeoProfsApiClient _apiClient;
 
-        private string _message = "Loading...";
-        public string Message
+        private object? _currentView;
+        public object? CurrentView
         {
-            get => _message;
-            set { _message = value; OnPropertyChanged(); }
+            get => _currentView;
+            set => SetProperty(ref _currentView, value);
         }
 
-        private bool _isError;
-        public bool IsError
+        private string _activeSection = "Requests";
+        public string ActiveSection
         {
-            get => _isError;
-            set { _isError = value; OnPropertyChanged(); }
+            get => _activeSection;
+            set => SetProperty(ref _activeSection, value);
         }
 
-        public MainViewModel()
+        public ICommand NavigateCommand { get; }
+
+        public MainViewModel(IGeoProfsApiClient apiClient)
         {
-            _ = LoadHelloMessageAsync();
+            _apiClient = apiClient;
+
+            // Pass the parameter (obj) directly to the Navigate method
+            NavigateCommand = new RelayCommand(obj => Navigate(obj as string));
+
+            // Default startup view
+            Navigate("Requests");
         }
 
-        private async Task LoadHelloMessageAsync()
+        private void Navigate(string? section)
         {
-            try
+            if (string.IsNullOrEmpty(section)) return;
+
+            ActiveSection = section;
+
+            switch (section)
             {
-                Message = await _api.GetHelloMessageAsync();
-                IsError = false;
-            }
-            catch (System.Exception ex)
-            {
-                Message = $"Could not reach the API: {ex.Message}";
-                IsError = true;
+                case "Requests":
+                    CurrentView = new ApprovalsViewModel(_apiClient);
+                    break;
+                // Future sections go here:
+                // case "Overview": CurrentView = new OverviewViewModel(_apiClient); break;
+                default:
+                    CurrentView = null; // Shows placeholder text in MainWindow for unbuilt views
+                    break;
             }
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

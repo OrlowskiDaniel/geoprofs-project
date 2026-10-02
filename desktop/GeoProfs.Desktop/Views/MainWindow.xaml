@@ -1,18 +1,170 @@
-<Window x:Class="GeoProfs.Desktop.Views.MainWindow"
+<Window x:Class="GeoProfs.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:GeoProfs.Desktop.ViewModels"
-        Title="GeoProfs Desktop" Height="220" Width="420">
+        xmlns:views="clr-namespace:GeoProfs.Desktop.Views"
+        mc:Ignorable="d"
+        Title="GeoProfs" Height="650" Width="1000" WindowStartupLocation="CenterScreen">
 
-    <Window.DataContext>
-        <vm:MainViewModel />
-    </Window.DataContext>
+    <Window.Resources>
+        <!-- DataTemplate maps ViewModel directly to View -->
+        <DataTemplate DataType="{x:Type vm:ApprovalsViewModel}">
+            <views:ApprovalsView />
+        </DataTemplate>
 
-    <StackPanel Margin="24">
-        <TextBlock Text="GeoProfs — WPF Client" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-        <TextBlock Text="This message came from the same Laravel API the React app uses:"
-                   TextWrapping="Wrap" Margin="0,0,0,12"/>
-        <TextBlock Text="{Binding Message}"
-                   FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
-    </StackPanel>
+        <!-- Teams Vertical Navigation Button Style -->
+        <Style x:Key="TeamsNavButton" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#ADADAD"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="0,8"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" Margin="4,2">
+                            <Grid>
+                                <!-- Active Indicator Strip (Left side) -->
+                                <Rectangle x:Name="indicator" 
+                                           Width="3" 
+                                           HorizontalAlignment="Left" 
+                                           VerticalAlignment="Stretch" 
+                                           Fill="#6264A7" 
+                                           Margin="-4,4,0,4"
+                                           Visibility="Collapsed"/>
+
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center" 
+                                                  Margin="{TemplateBinding Padding}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#292929"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="#2F2F2F"/>
+                                <Setter Property="Foreground" Value="#6264A7"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="indicator" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Navigation sidebar width -->
+            <ColumnDefinition Width="80"/>
+            <!-- Main content area -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar background -->
+        <Border Grid.Column="0" Background="#201F1E">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header / Brand -->
+                <StackPanel Grid.Row="0" Margin="0,16,0,12" HorizontalAlignment="Center">
+                    <TextBlock Text="GeoProfs" Foreground="White" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Navigation Options -->
+                <StackPanel Grid.Row="1">
+                    <!-- Overview -->
+                    <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Overview">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Overview" FontSize="11"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Requests -->
+                    <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav" IsChecked="True"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Requests">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE8D4;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Requests" FontSize="11"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Planning -->
+                    <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Planning">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Planning" FontSize="11"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Alerts -->
+                    <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Alerts">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xEA8F;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Alerts" FontSize="11"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Export -->
+                    <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Export">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xEDE1;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Export" FontSize="11"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+
+                <!-- Settings -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                    <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Settings" FontSize="11"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main workspace -->
+        <Grid Grid.Column="1" Background="#F5F5F5">
+            <ContentControl Content="{Binding CurrentView}">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Style.Triggers>
+                            <Trigger Property="Content" Value="{x:Null}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="This section is coming soon..." 
+                                                           Foreground="Gray" FontSize="16" FontWeight="SemiBold"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+        </Grid>
+    </Grid>
 </Window>
