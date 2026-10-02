@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
         $officeManagerRoleId = DB::table('roles')->where('name', 'Office Manager')->value('id');
         $administratorRoleId = DB::table('roles')->where('name', 'Administrator')->value('id');
 
-        // Werknemer
+        // Werknemer.
         $credId = DB::table('user_credits')->insertGetId([
             'email' => 'werknemer@geoprofs.nl',
             'password_hash' => Hash::make('password'),
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Manager
+        // Manager.
         $credId = DB::table('user_credits')->insertGetId([
             'email' => 'manager@geoprofs.nl',
             'password_hash' => Hash::make('password'),
@@ -57,7 +57,7 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Office Manager
+        // Office Manager.
         $credId = DB::table('user_credits')->insertGetId([
             'email' => 'officemanager@geoprofs.nl',
             'password_hash' => Hash::make('password'),
@@ -78,7 +78,7 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Administrator
+        // Administrator.
         $credId = DB::table('user_credits')->insertGetId([
             'email' => 'admin@geoprofs.nl',
             'password_hash' => Hash::make('password'),
