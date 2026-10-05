@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Login from "./Login";
 import PersonalData from "./PersonalData";
+import AuditTrail from "./AuditTrail";
 
 export default function App() {
   const [page, setPage] = useState(window.location.hash);
@@ -11,8 +12,15 @@ export default function App() {
     }
 
     window.addEventListener("hashchange", updatePage);
-    return () => window.removeEventListener("hashchange", updatePage);
+
+    return () => {
+      window.removeEventListener("hashchange", updatePage);
+    };
   }, []);
+
+  if (page === "#audit-trail") {
+    return <AuditTrail />;
+  }
 
   if (page === "#personal-data") {
     return (
