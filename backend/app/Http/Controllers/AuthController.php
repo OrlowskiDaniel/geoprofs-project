@@ -47,6 +47,13 @@ class AuthController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($user->must_change_password != 1) {
+            throw ValidationException::withMessages([
+                'must_change_password' => ['Cant change password.'],
+            ]);
+        }
+
         $credentials = $user->credentials;
         
         if (!$credentials || !Hash::check(
