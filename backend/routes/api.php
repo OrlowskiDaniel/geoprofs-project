@@ -10,9 +10,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-
     Route::get('/leave-types', [LeaveTypeController::class, 'index']);
-
+    //manager leave requests
     Route::get('/manager/leave-requests', [ManagerLeaveRequestController::class, 'index']);
 
     Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
