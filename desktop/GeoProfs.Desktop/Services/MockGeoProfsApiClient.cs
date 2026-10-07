@@ -27,6 +27,29 @@ namespace GeoProfs.Desktop.Services
             new LeaveRequest { Id = 4, EmployeeName = "Tom Willems",    StartDate = new DateTime(2026, 11, 12), EndDate = new DateTime(2026, 11, 13), Reason = "Moving house",  Status = "Pending", RequestedAt = new DateTime(2026, 10, 25) },
         };
 
+        public async Task<LoginResponse> LoginAsync(string email, string password)
+        {
+            await Task.Delay(SimulatedDelay);
+
+            if (email != "manager@geoprofs.nl" || password != "password")
+            {
+                throw new ApiException("Invalid email or password.", 401);
+            }
+
+            return new LoginResponse
+            {
+                Token = "mock-token",
+                User = new User
+                {
+                    Id = 2,
+                    RoleId = 2,
+                    FirstName = "Ta Ta Ta Ta",
+                    LastName = "Sahur",
+                    DepartmentId = null
+                }
+            };
+        }
+
         public async Task<List<LeaveRequest>> GetPendingApprovalsAsync()
         {
             await Task.Delay(SimulatedDelay);
