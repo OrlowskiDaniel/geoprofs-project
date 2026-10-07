@@ -37,4 +37,43 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out']);
     }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required'],
+            'new_password' => ['required', 'min:8', 'confirmed'],
+        ]);
+
+        $user = $request->user();
+
+        if ($user->must_change_password != 1) {
+            throw ValidationException::withMessages([
+                'must_change_password' => ['Cant change password.'],
+            ]);
+        }
+
+        $credentials = $user->credentials;
+        
+        if (!$credentials || !Hash::check(
+            $request->current_password,
+            $credentials->password_hash
+        )) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The password is incorrect.'],
+            ]);
+        }
+
+        $credentials->password_hash = Hash::make($request->new_password);
+        $credentials->save();
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
+        ]);
+    }
 }
