@@ -7,7 +7,6 @@ use App\Http\Controllers\ManagerLeaveRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/leave-types', [LeaveTypeController::class, 'index']);
 

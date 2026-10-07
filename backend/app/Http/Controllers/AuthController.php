@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -38,11 +39,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out']);
     }
 
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-    }
-
     public function changePassword(Request $request)
     {
         $request->validate([
@@ -59,7 +55,7 @@ class AuthController extends Controller
         }
 
         $credentials = $user->credentials;
-        
+
         if (!$credentials || !Hash::check(
             $request->current_password,
             $credentials->password_hash
