@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
+use App\Models\LeaveBalance;
 use App\Models\LeaveStatus;
 use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
 {
     // GET /api/leave-requests
-    public function index()
+    public function index(Request $request)
     {
-        $requests = LeaveRequest::with(['leaveType', 'status', 'user', 'reviewer'])->get();
+        $requests = LeaveRequest::with(['leaveType', 'status', 'reviewer'])
+            ->where('user_id', $request->user()->id)
+            ->get();
 
         return response()->json($requests);
     }
@@ -37,6 +40,27 @@ class LeaveRequestController extends Controller
         ]);
 
         $pendingStatus = LeaveStatus::where('name', 'In behandeling')->firstOrFail();
+
+        // Check if user has enough balance for leave types that deduct from balance
+        $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
+
+        if ($leaveType->deducts_from_balance) {
+            $balance = LeaveBalance::where('user_id', $request->user()->id)
+                ->where('leave_type_id', $validated['leave_type_id'])
+                ->where('year', now()->year)
+                ->first();
+
+            $usedDays = LeaveRequest::where('user_id', $request->user()->id)
+                ->where('leave_type_id', $validated['leave_type_id'])
+                ->whereHas('status', fn($q) => $q->where('name', 'Goedgekeurd'))
+                ->sum('number_of_days');
+
+            $remainingDays = ($balance->days_per_year ?? 0) - $usedDays;
+
+            if ($validated['number_of_days'] > $remainingDays) {
+                return response()->json(['message' => 'Niet genoeg verlofdagen beschikbaar'], 422);
+            }
+        }
 
         $leaveRequest = LeaveRequest::create([
             'user_id' => $request->user()->id,
