@@ -9,6 +9,7 @@ import {
   PERMISSIONS,
   hasPermission,
 } from "./auth/roles";
+import UserManagement from "./UserManagement";
 
 const navigation = [
   { label: "Login", href: "#" },
@@ -27,6 +28,11 @@ const navigation = [
     href: "#audit-trail",
     permission: PERMISSIONS.VIEW_AUDIT_TRAIL,
   },
+{
+  label: "User management",
+  href: "#users",
+  permission: PERMISSIONS.MANAGE_USERS,
+},
 ];
 
 export default function App() {
@@ -125,11 +131,13 @@ export default function App() {
         <PersonalData />
       ) : activePage === "#request-leave" ? (
         <RequestLeave />
-      ) : activePage === "#audit-trail" ? (
-        <AuditTrail />
-      ) : (
-        <Login />
-      )}
+     ) : activePage === "#audit-trail" ? (
+       <AuditTrail />
+     ) : activePage === "#users" ? (
+       <UserManagement />
+     ) : (
+       <Login />
+     )}
     </div>
   );
 }
