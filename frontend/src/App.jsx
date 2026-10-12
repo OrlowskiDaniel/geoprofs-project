@@ -3,6 +3,8 @@ import Login from "./Login";
 import PersonalData from "./PersonalData";
 import AuditTrail from "./AuditTrail";
 import RequestLeave from "./RequestLeave";
+import { demoUser } from "./auth/demoUser";
+import { ROLE_LABELS } from "./auth/roles";
 
 const navigation = [
   { label: "Login", href: "#" },
@@ -13,7 +15,7 @@ const navigation = [
 
 export default function App() {
   const [page, setPage] = useState(window.location.hash);
-
+const [currentUser] = useState(demoUser);
   useEffect(() => {
     function updatePage() {
       setPage(window.location.hash);
@@ -41,7 +43,10 @@ export default function App() {
           <a href="#" className="text-xl font-bold text-[#6335d1]">
             GeoProfs
           </a>
-
+<span className="text-sm text-gray-600">
+  {currentUser.firstName} ·{" "}
+  {currentUser.roles.map((role) => ROLE_LABELS[role]).join(", ")}
+</span>
           <div className="flex flex-wrap gap-2">
             {navigation.map((item) => {
               const isActive = activePage === item.href;
