@@ -31,11 +31,8 @@ const navigation = [
 
 export default function App() {
   const [page, setPage] = useState(window.location.hash);
-const [currentUser] = useState(demoUser);
-const visibleNavigation = navigation.filter(
-  (item) =>
-    !item.permission || hasPermission(currentUser, item.permission)
-);
+  const [currentUser] = useState(demoUser);
+
   useEffect(() => {
     function updatePage() {
       setPage(window.location.hash);
@@ -49,9 +46,22 @@ const visibleNavigation = navigation.filter(
     };
   }, []);
 
+  const visibleNavigation = navigation.filter(
+    (item) =>
+      !item.permission || hasPermission(currentUser, item.permission)
+  );
+
   const activePage = navigation.some((item) => item.href === page)
     ? page
     : "#";
+
+  const currentPage = navigation.find(
+    (item) => item.href === activePage
+  );
+
+  const canAccessPage =
+    !currentPage?.permission ||
+    hasPermission(currentUser, currentPage.permission);
 
   return (
     <div className="min-h-svh bg-[#f7f5ff]">
@@ -63,10 +73,14 @@ const visibleNavigation = navigation.filter(
           <a href="#" className="text-xl font-bold text-[#6335d1]">
             GeoProfs
           </a>
-<span className="text-sm text-gray-600">
-  {currentUser.firstName} ·{" "}
-  {currentUser.roles.map((role) => ROLE_LABELS[role]).join(", ")}
-</span>
+
+          <span className="text-sm text-gray-600">
+            {currentUser.firstName} ·{" "}
+            {currentUser.roles
+              .map((role) => ROLE_LABELS[role])
+              .join(", ")}
+          </span>
+
           <div className="flex flex-wrap gap-2">
             {visibleNavigation.map((item) => {
               const isActive = activePage === item.href;
@@ -90,15 +104,32 @@ const visibleNavigation = navigation.filter(
         </nav>
       </header>
 
-     {activePage === "#personal-data" ? (
-       <PersonalData />
-     ) : activePage === "#request-leave" ? (
-       <RequestLeave />
-     ) : activePage === "#audit-trail" ? (
-       <AuditTrail />
-     ) : (
-       <Login />
-     )}
+      {!canAccessPage ? (
+        <main className="grid min-h-[calc(100svh-80px)] place-items-center px-5">
+          <div className="text-center">
+            <h1 className="text-3xl font-semibold text-[#6335d1]">
+              Access denied
+            </h1>
+            <p className="mt-3 text-gray-600">
+              Your role does not have permission to view this page.
+            </p>
+            <a
+              href="#"
+              className="mt-6 inline-block rounded-lg bg-[#6335d1] px-5 py-3 text-white"
+            >
+              Back to login
+            </a>
+          </div>
+        </main>
+      ) : activePage === "#personal-data" ? (
+        <PersonalData />
+      ) : activePage === "#request-leave" ? (
+        <RequestLeave />
+      ) : activePage === "#audit-trail" ? (
+        <AuditTrail />
+      ) : (
+        <Login />
+      )}
     </div>
   );
 }
