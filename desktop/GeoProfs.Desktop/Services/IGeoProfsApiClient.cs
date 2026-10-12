@@ -14,6 +14,10 @@ namespace GeoProfs.Desktop.Services
     // That is what makes the swap to the real API a oneline change later
     public interface IGeoProfsApiClient
     {
+
+        // POST /api/auth/login
+        Task<LoginResponse> LoginAsync(string username, string password);
+
         // GET /api/approvals/pending
         Task<List<LeaveRequest>> GetPendingApprovalsAsync();
 
