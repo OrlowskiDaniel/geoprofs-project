@@ -20,9 +20,13 @@ class LeaveRequestController extends Controller
     }
 
     // GET /api/leave-requests/{id}
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
-        $leaveRequest = LeaveRequest::with(['leaveType', 'status', 'user', 'reviewer'])->findOrFail($id);
+        $leaveRequest = LeaveRequest::with(['leaveType', 'status', 'reviewer'])->findOrFail($id);
+
+        if ($leaveRequest->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Geen toegang'], 403);
+        }
 
         return response()->json($leaveRequest);
     }
