@@ -4,18 +4,38 @@ import PersonalData from "./PersonalData";
 import AuditTrail from "./AuditTrail";
 import RequestLeave from "./RequestLeave";
 import { demoUser } from "./auth/demoUser";
-import { ROLE_LABELS } from "./auth/roles";
+import {
+  ROLE_LABELS,
+  PERMISSIONS,
+  hasPermission,
+} from "./auth/roles";
 
 const navigation = [
   { label: "Login", href: "#" },
-  { label: "Personal data", href: "#personal-data" },
-  { label: "Request leave", href: "#request-leave" },
-  { label: "Audit trail", href: "#audit-trail" },
+  {
+    label: "Personal data",
+    href: "#personal-data",
+    permission: PERMISSIONS.VIEW_PERSONAL_DATA,
+  },
+  {
+    label: "Request leave",
+    href: "#request-leave",
+    permission: PERMISSIONS.REQUEST_LEAVE,
+  },
+  {
+    label: "Audit trail",
+    href: "#audit-trail",
+    permission: PERMISSIONS.VIEW_AUDIT_TRAIL,
+  },
 ];
 
 export default function App() {
   const [page, setPage] = useState(window.location.hash);
 const [currentUser] = useState(demoUser);
+const visibleNavigation = navigation.filter(
+  (item) =>
+    !item.permission || hasPermission(currentUser, item.permission)
+);
   useEffect(() => {
     function updatePage() {
       setPage(window.location.hash);
@@ -48,7 +68,7 @@ const [currentUser] = useState(demoUser);
   {currentUser.roles.map((role) => ROLE_LABELS[role]).join(", ")}
 </span>
           <div className="flex flex-wrap gap-2">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive = activePage === item.href;
 
               return (
