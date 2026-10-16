@@ -27,11 +27,13 @@ export default function UserManagement() {
   const [editingId, setEditingId] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   function startEditing(user) {
     setEditingId(user.id);
     setSelectedRoles([...user.roles]);
     setError("");
+    setMessage("");
   }
 
   function toggleRole(role) {
@@ -51,9 +53,17 @@ export default function UserManagement() {
 
   function saveRoles(event) {
     event.preventDefault();
+    setMessage("");
 
     if (!hasValidRoles(selectedRoles)) {
       setError("Select at least one role.");
+      return;
+    }
+
+    const updatedUser = users.find((user) => user.id === editingId);
+
+    if (!updatedUser) {
+      setError("User not found. Please select a user again.");
       return;
     }
 
@@ -64,6 +74,10 @@ export default function UserManagement() {
           ? { ...user, roles: [...selectedRoles] }
           : user
       )
+    );
+
+    setMessage(
+      `Roles updated for ${updatedUser.name} in this demo. Changes are not saved to the server.`
     );
 
     cancelEditing();
@@ -85,6 +99,15 @@ export default function UserManagement() {
           you reload or navigate away.
         </p>
 
+        {message && (
+          <p
+            role="status"
+            className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+          >
+            {message}
+          </p>
+        )}
+
         <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full min-w-[700px] text-left text-sm">
             <caption className="sr-only">
@@ -93,18 +116,30 @@ export default function UserManagement() {
 
             <thead className="bg-[#eee8ff] text-[#5330a8]">
               <tr>
-                <th scope="col" className="px-6 py-4">Name</th>
-                <th scope="col" className="px-6 py-4">Email</th>
-                <th scope="col" className="px-6 py-4">Roles</th>
-                <th scope="col" className="px-6 py-4">Actions</th>
+                <th scope="col" className="px-6 py-4">
+                  Name
+                </th>
+                <th scope="col" className="px-6 py-4">
+                  Email
+                </th>
+                <th scope="col" className="px-6 py-4">
+                  Roles
+                </th>
+                <th scope="col" className="px-6 py-4">
+                  Actions
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-t border-gray-100">
-                  <td className="px-6 py-4 font-medium">{user.name}</td>
-                  <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                  <td className="px-6 py-4 font-medium">
+                    {user.name}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {user.email}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">
                       {user.roles.map((role) => (
