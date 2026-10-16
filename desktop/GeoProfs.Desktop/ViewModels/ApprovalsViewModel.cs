@@ -1,11 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using GeoProfs.Desktop.Common;
+﻿using GeoProfs.Desktop.Common;
 using GeoProfs.Desktop.Models;
 using GeoProfs.Desktop.Services;
-using System.Windows;
 using GeoProfs.Desktop.Views;
+using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 
 namespace GeoProfs.Desktop.ViewModels
 {
@@ -73,31 +74,32 @@ namespace GeoProfs.Desktop.ViewModels
             await HandleDecisionAsync(request, () => _apiClient.ApproveAsync(request.Id));
         }
 
+
         private async Task RejectAsync(LeaveRequest? request)
         {
             if (request is null) return;
 
-            // show modal dialog to collect reason before rejecting
             try
             {
                 var dlg = new RejectDialog(request);
-                // center on MainWindow
+
                 if (Application.Current?.MainWindow != null)
                     dlg.Owner = Application.Current.MainWindow;
 
-                var result = dlg.ShowDialog();
-                if (result == true)
+                if (dlg.ShowDialog() == true)
                 {
-                    // Reason is available via dlg.Reason
-                    await HandleDecisionAsync(request, () => _apiClient.RejectAsync(request.Id));
+                    await HandleDecisionAsync(
+                        request,
+                        () => _apiClient.RejectAsync(request.Id, dlg.Reason)
+                    );
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                // errors via ErrorMessage
                 ErrorMessage = ex.Message;
             }
         }
+
 
         // shared by Approve/Reject: call the API, then drop the row from the
         // pending list on success
