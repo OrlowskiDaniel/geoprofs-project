@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace GeoProfs.Desktop.Views
+namespace GeoProfs.Desktop
 {
     public partial class MainWindow : Window
     {
