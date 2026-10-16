@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\ManagerLeaveRequestController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -20,7 +21,9 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::post('/login', [AuthController::class, 'login']);
-  
+
+route::get('/profile/{id}', [UserController::class, 'show']);
+
 Route::middleware('auth:sanctum')->post(
     '/logout',
     [AuthController::class, 'logout']
