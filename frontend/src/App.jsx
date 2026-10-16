@@ -3,16 +3,41 @@ import Login from "./Login";
 import PersonalData from "./PersonalData";
 import AuditTrail from "./AuditTrail";
 import RequestLeave from "./RequestLeave";
+import { demoUser } from "./auth/demoUser";
+import {
+  ROLE_LABELS,
+  PERMISSIONS,
+  hasPermission,
+} from "./auth/roles";
+import UserManagement from "./UserManagement";
 
 const navigation = [
   { label: "Login", href: "#" },
-  { label: "Personal data", href: "#personal-data" },
-  { label: "Request leave", href: "#request-leave" },
-  { label: "Audit trail", href: "#audit-trail" },
+  {
+    label: "Personal data",
+    href: "#personal-data",
+    permission: PERMISSIONS.VIEW_PERSONAL_DATA,
+  },
+  {
+    label: "Request leave",
+    href: "#request-leave",
+    permission: PERMISSIONS.REQUEST_LEAVE,
+  },
+  {
+    label: "Audit trail",
+    href: "#audit-trail",
+    permission: PERMISSIONS.VIEW_AUDIT_TRAIL,
+  },
+{
+  label: "User management",
+  href: "#users",
+  permission: PERMISSIONS.MANAGE_USERS,
+},
 ];
 
 export default function App() {
   const [page, setPage] = useState(window.location.hash);
+  const [currentUser] = useState(demoUser);
 
   useEffect(() => {
     function updatePage() {
@@ -27,9 +52,22 @@ export default function App() {
     };
   }, []);
 
+  const visibleNavigation = navigation.filter(
+    (item) =>
+      !item.permission || hasPermission(currentUser, item.permission)
+  );
+
   const activePage = navigation.some((item) => item.href === page)
     ? page
     : "#";
+
+  const currentPage = navigation.find(
+    (item) => item.href === activePage
+  );
+
+  const canAccessPage =
+    !currentPage?.permission ||
+    hasPermission(currentUser, currentPage.permission);
 
   return (
     <div className="min-h-svh bg-[#f7f5ff]">
@@ -42,8 +80,15 @@ export default function App() {
             GeoProfs
           </a>
 
+          <span className="text-sm text-gray-600">
+            {currentUser.firstName} ·{" "}
+            {currentUser.roles
+              .map((role) => ROLE_LABELS[role])
+              .join(", ")}
+          </span>
+
           <div className="flex flex-wrap gap-2">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive = activePage === item.href;
 
               return (
@@ -65,12 +110,31 @@ export default function App() {
         </nav>
       </header>
 
-     {activePage === "#personal-data" ? (
-       <PersonalData />
-     ) : activePage === "#request-leave" ? (
-       <RequestLeave />
+      {!canAccessPage ? (
+        <main className="grid min-h-[calc(100svh-80px)] place-items-center px-5">
+          <div className="text-center">
+            <h1 className="text-3xl font-semibold text-[#6335d1]">
+              Access denied
+            </h1>
+            <p className="mt-3 text-gray-600">
+              Your role does not have permission to view this page.
+            </p>
+            <a
+              href="#"
+              className="mt-6 inline-block rounded-lg bg-[#6335d1] px-5 py-3 text-white"
+            >
+              Back to login
+            </a>
+          </div>
+        </main>
+      ) : activePage === "#personal-data" ? (
+        <PersonalData />
+      ) : activePage === "#request-leave" ? (
+        <RequestLeave />
      ) : activePage === "#audit-trail" ? (
        <AuditTrail />
+     ) : activePage === "#users" ? (
+       <UserManagement />
      ) : (
        <Login />
      )}
