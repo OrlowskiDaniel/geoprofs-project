@@ -34,10 +34,6 @@ class UserController extends Controller
             $isManager = false;
         }
 
-        //3|GFHgRnmfidMuu7Qs3kF8S2tWq8bAtLqVNhxBF1o7c17a06fa
-
-        //4|SJwcErf6havtewOQwGBbwX3GRKl1H9RYNVPQloyfaf89bf70
-
         $vacationDays = $user->getLeaveBalances()->where('leave_type_id', 1)->first();
         $sickDays = $user->getLeaveBalances()->where('leave_type_id', 2)->first();
         $personalDays = $user->getLeaveBalances()->where('leave_type_id', 2)->first();
