@@ -3,12 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class UserController extends Controller
 {
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
         $user = User::where('id', $id)->firstOrFail();
+
+        $token = $request->bearerToken();
+        $accessToken = PersonalAccessToken::findToken($token);
+        
+        if (!$accessToken or !$accessToken->tokenable->id == $user->id) {
+            $ownerOfAcount = false;
+        }else{
+            $ownerOfAcount = true;
+        }
 
         $vacationDays = $user->getLeaveBalances()->where('leave_type_id', 1)->first();
         $sickDays = $user->getLeaveBalances()->where('leave_type_id', 2)->first();

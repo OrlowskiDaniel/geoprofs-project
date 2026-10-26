@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/login', [AuthController::class, 'login']);
 
-route::get('/profile/{id}', [UserController::class, 'show']);
+Route::get('/profile/{id}', [UserController::class, 'show']);
 
 Route::middleware('auth:sanctum')->post(
     '/logout',
