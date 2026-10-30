@@ -19,6 +19,10 @@ class UserSeeder extends Seeder
         $VerlofAanvraagId = DB::table('leave_types')->where('name', 'Verlofaanvraag')->value('id');
         $PersonalAanvraagId = DB::table('leave_types')->where('name', 'Persoonlijke dag')->value('id');
 
+        $HrDepartment = DB::table('departments')->where('name', 'HR')->value('id');
+        $CoolAssDepartment = DB::table('departments')->where('name', 'Cool ass department')->value('id');
+        $BrainrotTycoonDepartment = DB::table('departments')->where('name', 'BrainrotTycoon')->value('id');
+
         // Werknemer.
         $credId = DB::table('user_credits')->insertGetId([
             'email' => 'werknemer@geoprofs.nl',
@@ -29,6 +33,7 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             'role_id' => $werknemerRoleId,
+            'department_id' => $CoolAssDepartment,
             'user_credit_id' => $credId,
             'first_name' => 'Ballerina',
             'last_name' => 'Capuchina',
@@ -79,6 +84,7 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             'role_id' => $managerRoleId,
+            'department_id' => $HrDepartment,
             'user_credit_id' => $credId,
             'first_name' => 'Ta Ta Ta Ta',
             'last_name' => 'Sahur',
@@ -129,6 +135,7 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             'role_id' => $officeManagerRoleId,
+            'department_id' => $BrainrotTycoonDepartment,
             'user_credit_id' => $credId,
             'first_name' => 'Bombardino',
             'last_name' => 'Crocodilo',
@@ -179,6 +186,7 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             'role_id' => $administratorRoleId,
+            'department_id' => $BrainrotTycoonDepartment,
             'user_credit_id' => $credId,
             'first_name' => 'Tung Tung Tung',
             'last_name' => 'Sahur',

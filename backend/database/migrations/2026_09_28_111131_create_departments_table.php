@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('manager_id')->nullable()->constrained('users');
+            $table->foreignId('manager_id')->nullable();
             $table->string('name')->unique();
             $table->timestamps();
         });
