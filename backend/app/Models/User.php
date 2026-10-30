@@ -18,6 +18,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(UserCredit::class, 'user_credit_id');
     }
+    public function getLeaveBalances()
+    {
+        return $this->hasMany(LeaveBalance::class, 'user_id', 'id');
+    }
     protected $fillable = [
         'role_id',
         'department_id',
