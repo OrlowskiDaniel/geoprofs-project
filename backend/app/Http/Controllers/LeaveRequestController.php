@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\LeaveRequest;
 use App\Models\LeaveBalance;
 use App\Models\LeaveStatus;
+use App\Models\Notification;
+use App\Models\NotificationType;
 use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
@@ -85,24 +87,32 @@ class LeaveRequestController extends Controller
 
         $manager = $request->user();
 
-        // Only allow a manager to review requests from their department
+        // Block if the user is not a manager
+        $managerRole = \App\Models\Role::where('name', 'Manager')
+            ->orWhere('name', 'Office Manager')
+            ->orWhere('name', 'Administrator')
+            ->pluck('id');
 
+        if (!in_array($manager->role_id, $managerRole->toArray())) {
+            return response()->json(['message' => 'Geen toegang'], 403);
+        }
+
+        // Only allow a manager to review requests from their department
         $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($manager) {
             $query->where('department_id', $manager->department_id);
         })->findOrFail($id);
 
         // Prevent a manager from approving or rejecting their own request
-
         if ($leaveRequest->user_id === $manager->id) {
             return response()->json([
                 'message' => 'You cannot review your own leave request.',
             ], 403);
         }
 
-        $status = \App\Models\LeaveStatus::where(
-            'name',
-            $validated['status']
-        )->firstOrFail();
+        $status = LeaveStatus::where('name', $validated['status'])->firstOrFail();
+
+        // Only send notification if the status actually changes
+        $statusChanged = $leaveRequest->status_id !== $status->id;
 
         $leaveRequest->update([
             'status_id' => $status->id,
@@ -110,6 +120,18 @@ class LeaveRequestController extends Controller
             'reviewed_by' => $manager->id,
             'reviewed_at' => now(),
         ]);
+
+        if ($statusChanged) {
+            $notificationType = NotificationType::where('name', $validated['status'])->first();
+
+            Notification::create([
+                'receiver_id' => $leaveRequest->user_id,
+                'leave_request_id' => $leaveRequest->id,
+                'notification_type_id' => $notificationType->id,
+                'message' => 'Je verlofaanvraag is ' . strtolower($validated['status']) . '.',
+                'is_read' => false,
+            ]);
+        }
 
         return response()->json(
             $leaveRequest->load(['leaveType', 'status', 'user', 'reviewer'])
