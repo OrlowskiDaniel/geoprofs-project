@@ -7,7 +7,13 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    // GET /api/notifications
+    /**
+     * Get all notifications for the logged-in employee.
+     *
+     * Returns notifications ordered by most recent first. Each notification
+     * includes the related leave request and notification type.
+     * Only returns notifications for the authenticated user.
+     */
     public function index(Request $request)
     {
         $notifications = Notification::with(['leaveRequest', 'notificationType'])
@@ -18,7 +24,12 @@ class NotificationController extends Controller
         return response()->json($notifications);
     }
 
-    // PUT /api/notifications/{id}/read
+    /**
+     * Mark a notification as read.
+     *
+     * Sets `is_read` to true for the given notification.
+     * Returns 403 if the notification does not belong to the logged-in user.
+     */
     public function markAsRead(Request $request, int $id)
     {
         $notification = Notification::where('receiver_id', $request->user()->id)

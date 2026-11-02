@@ -1,14 +1,25 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 class ManagerLeaveRequestController extends Controller
 {
-    // GET /api/manager/leave-requests
+    /**
+     * Get all pending leave requests for the manager's department.
+     *
+     * Returns all leave requests with status "In behandeling" from employees
+     * in the department managed by the logged-in manager. Only accessible to
+     * users with the `check_leave_request` permission. Returns 403 if the
+     * logged-in user is not a manager.
+     */
     public function index(Request $request)
     {
         $manager = $request->user();
+
         $canReview = DB::table('roles')
             ->where('id', $manager->role_id)
             ->where('check_leave_request', true)
@@ -20,23 +31,12 @@ class ManagerLeaveRequestController extends Controller
             ], 403);
         }
 
-        // Find employees whose department is managed by this user
         $employeeIds = DB::table('users')
-            ->join(
-                'departments',
-                'users.department_id',
-                '=',
-                'departments.id'
-        )
+            ->join('departments', 'users.department_id', '=', 'departments.id')
             ->where('departments.manager_id', $manager->id)
             ->select('users.id');
 
-        $requests = LeaveRequest::with([
-            'leaveType',
-            'status',
-            'user',
-            'reviewer'
-        ])
+        $requests = LeaveRequest::with(['leaveType', 'status', 'user', 'reviewer'])
             ->whereIn('user_id', $employeeIds)
             ->whereHas('status', function ($query) {
                 $query->where('name', 'In behandeling');
@@ -44,26 +44,15 @@ class ManagerLeaveRequestController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Supply the full employee name expected by the WPF model,
-        // without adding a column to the database
-
         $requests->each(function ($leaveRequest) {
             if ($leaveRequest->user) {
                 $user = $leaveRequest->user;
-                $firstName = $user->getAttribute('first_name')
-                    ?? $user->getAttribute('firstName')
-                    ?? '';
-
-                $lastName = $user->getAttribute('last_name')
-                    ?? $user->getAttribute('lastName')
-                    ?? '';
-
-                $user->setAttribute(
-                    'name',
-                    trim($firstName . ' ' . $lastName)
-                );
+                $firstName = $user->getAttribute('first_name') ?? '';
+                $lastName = $user->getAttribute('last_name') ?? '';
+                $user->setAttribute('name', trim($firstName . ' ' . $lastName));
             }
         });
+
         return response()->json($requests);
     }
 }

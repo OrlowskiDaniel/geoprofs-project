@@ -6,7 +6,12 @@ use App\Models\LeaveType;
 
 class LeaveTypeController extends Controller
 {
-    // GET /api/leave-types
+    /**
+     * Get all active leave types.
+     *
+     * Returns a list of active leave types. Used by the frontend to populate
+     * the leave type dropdown when submitting a leave request.
+     */
     public function index()
     {
         return response()->json(LeaveType::where('active', true)->get());
