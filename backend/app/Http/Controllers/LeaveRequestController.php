@@ -11,7 +11,12 @@ use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
 {
-    // GET /api/leave-requests
+    /**
+     * Get all leave requests for the logged-in employee.
+     *
+     * Returns only the requests that belong to the authenticated user.
+     * Each request includes the leave type, status and reviewer.
+     */
     public function index(Request $request)
     {
         $requests = LeaveRequest::with(['leaveType', 'status', 'reviewer'])
@@ -21,7 +26,12 @@ class LeaveRequestController extends Controller
         return response()->json($requests);
     }
 
-    // GET /api/leave-requests/{id}
+    /**
+     * Get a single leave request by ID.
+     *
+     * Only returns the request if it belongs to the logged-in user.
+     * Returns 403 if the request belongs to someone else.
+     */
     public function show(Request $request, int $id)
     {
         $leaveRequest = LeaveRequest::with(['leaveType', 'status', 'reviewer'])->findOrFail($id);
@@ -33,7 +43,20 @@ class LeaveRequestController extends Controller
         return response()->json($leaveRequest);
     }
 
-    // POST /api/leave-requests
+    /**
+     * Submit a new leave request.
+     *
+     * Creates a new leave request for the logged-in employee. The status is
+     * automatically set to "In behandeling". If the leave type deducts from
+     * the balance, the remaining balance is checked first.
+     *
+     * @param int leave_type_id
+     * @param string start_date Format: YYYY-MM-DD
+     * @param string end_date Format: YYYY-MM-DD, must be on or after start_date
+     * @param string reason Reason for the leave request
+     * @param int number_of_days Number of working days
+     * @param bool personal_leave Whether this is a personal leave request
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -47,7 +70,6 @@ class LeaveRequestController extends Controller
 
         $pendingStatus = LeaveStatus::where('name', 'In behandeling')->firstOrFail();
 
-        // Check if user has enough balance for leave types that deduct from balance
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
 
         if ($leaveType->deducts_from_balance) {
@@ -77,7 +99,16 @@ class LeaveRequestController extends Controller
         return response()->json($leaveRequest, 201);
     }
 
-    // PUT /api/leave-requests/{id}
+    /**
+     * Approve or reject a leave request (manager only).
+     *
+     * Only managers, office managers and administrators can use this endpoint.
+     * A manager can only review requests from employees in their department.
+     * A notification is automatically sent to the employee when the status changes.
+     *
+     * @param string status Either "Goedgekeurd" or "Afgekeurd"
+     * @param string|null rejection_reason Required when status is "Afgekeurd"
+     */
     public function update(Request $request, int $id)
     {
         $validated = $request->validate([
@@ -138,7 +169,12 @@ class LeaveRequestController extends Controller
         );
     }
 
-    // DELETE /api/leave-requests/{id}
+    /**
+     * Delete a leave request.
+     *
+     * Permanently removes a leave request from the database.
+     * Returns 204 No Content on success.
+     */
     public function destroy(int $id)
     {
         $leaveRequest = LeaveRequest::findOrFail($id);
