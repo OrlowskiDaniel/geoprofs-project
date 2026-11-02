@@ -25,6 +25,7 @@ namespace GeoProfs.Desktop.Services
         Task ApproveAsync(int id);
 
         // POST /api/approvals/{id}/reject
-        Task RejectAsync(int id);
+        Task RejectAsync(int id, string reason);
+
     }
 }

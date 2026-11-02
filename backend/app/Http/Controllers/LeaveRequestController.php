@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\LeaveRequest;
 use App\Models\LeaveBalance;
 use App\Models\LeaveStatus;
+use App\Models\Notification;
+use App\Models\NotificationType;
 use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
@@ -20,9 +22,13 @@ class LeaveRequestController extends Controller
     }
 
     // GET /api/leave-requests/{id}
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
-        $leaveRequest = LeaveRequest::with(['leaveType', 'status', 'user', 'reviewer'])->findOrFail($id);
+        $leaveRequest = LeaveRequest::with(['leaveType', 'status', 'reviewer'])->findOrFail($id);
+
+        if ($leaveRequest->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Geen toegang'], 403);
+        }
 
         return response()->json($leaveRequest);
     }
@@ -74,21 +80,62 @@ class LeaveRequestController extends Controller
     // PUT /api/leave-requests/{id}
     public function update(Request $request, int $id)
     {
-        $leaveRequest = LeaveRequest::findOrFail($id);
-
         $validated = $request->validate([
-            'status_id' => 'required|exists:leave_statuses,id',
-            'rejection_reason' => 'nullable|string|required_if:status_id,' . LeaveStatus::where('name', 'Afgekeurd')->value('id'),
+            'status' => 'required|in:Goedgekeurd,Afgekeurd',
+            'rejection_reason' => 'nullable|string|required_if:status,Afgekeurd',
         ]);
 
+        $manager = $request->user();
+
+        // Block if the user is not a manager
+        $managerRole = \App\Models\Role::where('name', 'Manager')
+            ->orWhere('name', 'Office Manager')
+            ->orWhere('name', 'Administrator')
+            ->pluck('id');
+
+        if (!in_array($manager->role_id, $managerRole->toArray())) {
+            return response()->json(['message' => 'Geen toegang'], 403);
+        }
+
+        // Only allow a manager to review requests from their department
+        $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($manager) {
+            $query->where('department_id', $manager->department_id);
+        })->findOrFail($id);
+
+        // Prevent a manager from approving or rejecting their own request
+        if ($leaveRequest->user_id === $manager->id) {
+            return response()->json([
+                'message' => 'You cannot review your own leave request.',
+            ], 403);
+        }
+
+        $status = LeaveStatus::where('name', $validated['status'])->firstOrFail();
+
+        // Only send notification if the status actually changes
+        $statusChanged = $leaveRequest->status_id !== $status->id;
+
         $leaveRequest->update([
-            'status_id' => $validated['status_id'],
+            'status_id' => $status->id,
             'rejection_reason' => $validated['rejection_reason'] ?? null,
-            'reviewed_by' => $request->user()->id,
+            'reviewed_by' => $manager->id,
             'reviewed_at' => now(),
         ]);
 
-        return response()->json($leaveRequest);
+        if ($statusChanged) {
+            $notificationType = NotificationType::where('name', $validated['status'])->first();
+
+            Notification::create([
+                'receiver_id' => $leaveRequest->user_id,
+                'leave_request_id' => $leaveRequest->id,
+                'notification_type_id' => $notificationType->id,
+                'message' => 'Je verlofaanvraag is ' . strtolower($validated['status']) . '.',
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json(
+            $leaveRequest->load(['leaveType', 'status', 'user', 'reviewer'])
+        );
     }
 
     // DELETE /api/leave-requests/{id}

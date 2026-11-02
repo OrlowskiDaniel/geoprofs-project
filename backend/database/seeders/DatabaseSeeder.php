@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             LeaveStatusSeeder::class,
             LeaveRequestSeeder::class,
+            NotificationTypeSeeder::class,
         ]);
     }
 }

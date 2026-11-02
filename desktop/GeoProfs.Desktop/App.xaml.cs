@@ -41,9 +41,6 @@ namespace GeoProfs.Desktop
                 DataContext = mainViewModel
             };
 
-            MainWindow = mainWindow;
-            ShutdownMode = ShutdownMode.OnLastWindowClose;
-
             mainWindow.Show();
         }
     }
