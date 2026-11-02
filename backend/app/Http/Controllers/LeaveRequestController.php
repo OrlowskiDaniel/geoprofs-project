@@ -118,6 +118,7 @@ class LeaveRequestController extends Controller
 
         $manager = $request->user();
 
+        // Block if the user is not a manager
         $managerRole = \App\Models\Role::where('name', 'Manager')
             ->orWhere('name', 'Office Manager')
             ->orWhere('name', 'Administrator')
@@ -127,10 +128,12 @@ class LeaveRequestController extends Controller
             return response()->json(['message' => 'Geen toegang'], 403);
         }
 
+        // Only allow a manager to review requests from their department
         $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($manager) {
             $query->where('department_id', $manager->department_id);
         })->findOrFail($id);
 
+        // Prevent a manager from approving or rejecting their own request
         if ($leaveRequest->user_id === $manager->id) {
             return response()->json([
                 'message' => 'You cannot review your own leave request.',
@@ -139,6 +142,7 @@ class LeaveRequestController extends Controller
 
         $status = LeaveStatus::where('name', $validated['status'])->firstOrFail();
 
+        // Only send notification if the status actually changes
         $statusChanged = $leaveRequest->status_id !== $status->id;
 
         $leaveRequest->update([

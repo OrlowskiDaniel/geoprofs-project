@@ -14,6 +14,7 @@ class NotificationController extends Controller
      * includes the related leave request and notification type.
      * Only returns notifications for the authenticated user.
      */
+    // GET /api/notifications
     public function index(Request $request)
     {
         $notifications = Notification::with(['leaveRequest', 'notificationType'])
@@ -30,6 +31,7 @@ class NotificationController extends Controller
      * Sets `is_read` to true for the given notification.
      * Returns 403 if the notification does not belong to the logged-in user.
      */
+    // PUT /api/notifications/{id}/read
     public function markAsRead(Request $request, int $id)
     {
         $notification = Notification::where('receiver_id', $request->user()->id)
