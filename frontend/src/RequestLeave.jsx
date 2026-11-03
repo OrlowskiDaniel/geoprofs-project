@@ -1,37 +1,66 @@
 import { useState } from "react";
 
+// Demo options. Match these values with the backend before integration.
+const leaveTypes = [
+  { value: "annual", label: "Annual leave" },
+  { value: "sick", label: "Sick leave" },
+  { value: "unpaid", label: "Unpaid leave" },
+  { value: "other", label: "Other" },
+];
+
+function calculateDays(startDate, endDate) {
+  if (!startDate || !endDate || endDate < startDate) {
+    return 0;
+  }
+
+  const start = Date.parse(`${startDate}T00:00:00Z`);
+  const end = Date.parse(`${endDate}T00:00:00Z`);
+
+  return Math.round((end - start) / 86400000) + 1;
+}
+
+const inputClass =
+  "w-full rounded-lg bg-white px-4 py-3 text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-white";
+
 export default function RequestLeave() {
+  const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  const totalDays = calculateDays(startDate, endDate);
+  const reasonRequired = leaveType !== "sick";
+
+  function clearFeedback() {
     setError("");
     setMessage("");
+  }
 
-    if (!reason.trim()) {
+  function handleSubmit(event) {
+    event.preventDefault();
+    clearFeedback();
+
+    if (!leaveType) {
+      setError("Please select a leave type.");
+      return;
+    }
+
+    if (!startDate || !endDate || endDate < startDate) {
+      setError("Please select a valid date range.");
+      return;
+    }
+
+    if (reasonRequired && !reason.trim()) {
       setError("Please enter a reason for your leave.");
       return;
     }
 
-    if (endDate < startDate) {
-      setError("The end date must be on or after the start date.");
-      return;
-    }
-
-    const request = {
-      startDate,
-      endDate,
-      reason: reason.trim(),
-    };
-
-    // Send request to the backend when the API is ready.
-    // The backend must associate it with the signed-in employee.
+    // API integration goes here.
+    // Available values: leaveType, startDate, endDate, reason, totalDays.
     setMessage(
-      "Your request is ready for submission. It has not been sent because the backend is not connected."
+      "Your form is complete. The request has not been submitted yet."
     );
   }
 
@@ -43,76 +72,129 @@ export default function RequestLeave() {
         </h1>
 
         <p className="mt-3 text-gray-600">
-          Select your leave dates and explain the reason for your request.
+          Choose your leave type, select the dates and provide a reason
+          if required.
         </p>
 
         <form
           onSubmit={handleSubmit}
           className="mt-8 rounded-xl bg-[#6335d1] p-6 text-white sm:p-10"
         >
-          <div className="grid gap-6 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-2 block font-medium">
+              Leave type *
+            </span>
+
+            <select
+              value={leaveType}
+              onChange={(event) => {
+                setLeaveType(event.target.value);
+                clearFeedback();
+              }}
+              required
+              className={inputClass}
+            >
+              <option value="">Select a leave type</option>
+
+              {leaveTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
             <label>
-              <span className="mb-2 block font-medium">Start date *</span>
+              <span className="mb-2 block font-medium">
+                Start date *
+              </span>
+
               <input
                 type="date"
                 value={startDate}
                 onChange={(event) => {
                   setStartDate(event.target.value);
-                  setError("");
-                  setMessage("");
+                  clearFeedback();
                 }}
                 required
-                className="w-full rounded-lg bg-white px-4 py-3 text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+                className={inputClass}
               />
             </label>
 
             <label>
-              <span className="mb-2 block font-medium">End date *</span>
+              <span className="mb-2 block font-medium">
+                End date *
+              </span>
+
               <input
                 type="date"
                 value={endDate}
                 min={startDate || undefined}
                 onChange={(event) => {
                   setEndDate(event.target.value);
-                  setError("");
-                  setMessage("");
+                  clearFeedback();
                 }}
                 required
-                className="w-full rounded-lg bg-white px-4 py-3 text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+                className={inputClass}
               />
             </label>
           </div>
 
+          <div
+            role="status"
+            className="mt-6 rounded-lg border border-white/30 bg-white/10 p-4"
+          >
+            <p className="font-semibold">
+              Total: {totalDays} {totalDays === 1 ? "day" : "days"}
+            </p>
+
+            <p className="mt-1 text-sm text-white/80">
+              Calendar days, including the start and end dates.
+            </p>
+          </div>
+
           <label className="mt-6 block">
-            <span className="mb-2 block font-medium">Reason *</span>
+            <span className="mb-2 block font-medium">
+              Reason {reasonRequired ? "*" : "(optional)"}
+            </span>
+
             <textarea
               value={reason}
               onChange={(event) => {
                 setReason(event.target.value);
-                setError("");
-                setMessage("");
+                clearFeedback();
               }}
               placeholder="Enter the reason for your leave..."
-              required
+              required={reasonRequired}
               maxLength={1000}
               rows={6}
               aria-describedby="reason-count"
-              className="w-full resize-y rounded-lg bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+              className={`${inputClass} resize-y placeholder:text-gray-500`}
             />
           </label>
 
-          <p id="reason-count" className="mt-2 text-right text-sm text-white/80">
+          <p
+            id="reason-count"
+            className="mt-2 text-right text-sm text-white/80"
+          >
             {reason.length}/1000 characters
           </p>
 
           {error && (
-            <p role="alert" className="mt-5 rounded-lg bg-white p-4 text-red-700">
+            <p
+              role="alert"
+              className="mt-5 rounded-lg bg-white p-4 text-red-700"
+            >
               {error}
             </p>
           )}
 
           {message && (
-            <p role="status" className="mt-5 rounded-lg bg-white p-4 text-[#5330a8]">
+            <p
+              role="status"
+              className="mt-5 rounded-lg bg-white p-4 text-[#5330a8]"
+            >
               {message}
             </p>
           )}
