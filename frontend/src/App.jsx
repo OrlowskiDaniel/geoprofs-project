@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import Login from "./Login";
 import PersonalData from "./PersonalData";
 import RequestLeave from "./RequestLeave";
+import LeaveOverview from "./LeaveOverview";
 import { api, clearToken } from "./api/client";
 
 const navigation = [
   { label: "Change password", href: "#personal-data" },
   { label: "Request leave", href: "#request-leave" },
+  { label: "Leave overview", href: "#leave-overview" },
 ];
 
 export default function App() {
@@ -35,6 +37,8 @@ export default function App() {
   }
 
   async function handleLogout() {
+    if (isLoggingOut) return;
+
     setIsLoggingOut(true);
     setLogoutError("");
 
@@ -54,7 +58,6 @@ export default function App() {
     window.location.hash = "";
   }
 
-  // Do not render navigation or private pages before login.
   if (!isAuthenticated) {
     return <Login onSignedIn={handleSignedIn} />;
   }
@@ -78,22 +81,24 @@ export default function App() {
           </a>
 
           <div className="flex flex-wrap items-center gap-2">
-            {navigation.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                aria-current={
-                  activePage === item.href ? "page" : undefined
-                }
-                className={`rounded-lg px-4 py-2 text-sm font-semibold ${
-                  activePage === item.href
-                    ? "bg-[#6335d1] text-white"
-                    : "text-[#6335d1] hover:bg-[#eee8ff]"
-                }`}
-              >
-                {item.label}
-              </a>
-            ))}
+            {navigation.map((item) => {
+              const isActive = activePage === item.href;
+
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6335d1] ${
+                    isActive
+                      ? "bg-[#6335d1] text-white"
+                      : "text-[#6335d1] hover:bg-[#eee8ff]"
+                  }`}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
 
             <button
               type="button"
@@ -108,12 +113,17 @@ export default function App() {
       </header>
 
       {logoutError && (
-        <p role="alert" className="px-5 py-3 text-center text-red-700">
+        <p
+          role="alert"
+          className="px-5 py-3 text-center text-red-700"
+        >
           {logoutError}
         </p>
       )}
 
-      {activePage === "#request-leave" ? (
+      {activePage === "#leave-overview" ? (
+        <LeaveOverview />
+      ) : activePage === "#request-leave" ? (
         <RequestLeave />
       ) : (
         <PersonalData />
