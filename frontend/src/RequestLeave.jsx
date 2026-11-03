@@ -21,12 +21,29 @@ function calculateDays(startDate, endDate) {
 const inputClass =
   "w-full rounded-lg bg-white px-4 py-3 text-gray-900 disabled:opacity-60 focus:outline-2 focus:outline-offset-2 focus:outline-white";
 
-export default function RequestLeave() {
-  const [leaveTypes, setLeaveTypes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [reloadCount, setReloadCount] = useState(0);
+// Demo options. Match these values with the backend before integration.
+const leaveTypes = [
+  { value: "annual", label: "Annual leave" },
+  { value: "sick", label: "Sick leave" },
+  { value: "unpaid", label: "Unpaid leave" },
+  { value: "other", label: "Other" },
+];
 
+function calculateDays(startDate, endDate) {
+  if (!startDate || !endDate || endDate < startDate) {
+    return 0;
+  }
+
+  const start = Date.parse(`${startDate}T00:00:00Z`);
+  const end = Date.parse(`${endDate}T00:00:00Z`);
+
+  return Math.round((end - start) / 86400000) + 1;
+}
+
+const inputClass =
+  "w-full rounded-lg bg-white px-4 py-3 text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-white";
+
+export default function RequestLeave() {
   const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -36,66 +53,24 @@ export default function RequestLeave() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadLeaveTypes() {
-      setIsLoading(true);
-      setLoadError("");
-
-      try {
-        const data = await api.getLeaveTypes();
-
-        if (!Array.isArray(data)) {
-          throw new Error("Unable to read the available leave types.");
-        }
-
-        if (!cancelled) {
-          setLeaveTypes(data);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setLoadError(error.message || "Unable to load leave types.");
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadLeaveTypes();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadCount]);
-
-  const selectedType = leaveTypes.find(
-    (type) => String(type.id) === leaveType
-  );
-
-  const reasonRequired = selectedType?.name !== "Ziekmelding";
   const totalDays = calculateDays(startDate, endDate);
+  const reasonRequired = leaveType !== "sick";
 
   function clearFeedback() {
     setError("");
     setMessage("");
   }
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault();
-
-    if (isSubmitting) return;
-
     clearFeedback();
 
-    if (!selectedType) {
+    if (!leaveType) {
       setError("Please select a leave type.");
       return;
     }
 
-    if (!startDate || !endDate || totalDays < 1) {
+    if (!startDate || !endDate || endDate < startDate) {
       setError("Please select a valid date range.");
       return;
     }
@@ -105,30 +80,11 @@ export default function RequestLeave() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      await api.createLeaveRequest({
-        leave_type_id: selectedType.id,
-        start_date: startDate,
-        end_date: endDate,
-        number_of_days: totalDays,
-        reason: reason.trim(),
-        personal_leave: selectedType.name === "Persoonlijke dag",
-      });
-
-      setMessage("Your leave request has been submitted successfully.");
-      setLeaveType("");
-      setStartDate("");
-      setEndDate("");
-      setReason("");
-    } catch (error) {
-      setError(
-        error.message || "Unable to submit your request. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    // API integration goes here.
+    // Available values: leaveType, startDate, endDate, reason, totalDays.
+    setMessage(
+      "Your form is complete. The request has not been submitted yet."
+    );
   }
 
   return (
@@ -143,26 +99,109 @@ export default function RequestLeave() {
           if required.
         </p>
 
-        {isLoading ? (
-          <p role="status" className="mt-8 text-gray-600">
-            Loading leave types...
-          </p>
-        ) : loadError ? (
-          <div className="mt-8 rounded-lg bg-white p-6">
-            <p role="alert" className="text-red-700">
-              {loadError}
-            </p>
-            <button
-              type="button"
-              onClick={() => setReloadCount((count) => count + 1)}
-              className="mt-4 rounded-lg bg-[#6335d1] px-5 py-2 text-white"
+        <form
+          onSubmit={handleSubmit}
+          className="mt-8 rounded-xl bg-[#6335d1] p-6 text-white sm:p-10"
+        >
+          <label className="block">
+            <span className="mb-2 block font-medium">
+              Leave type *
+            </span>
+
+            <select
+              value={leaveType}
+              onChange={(event) => {
+                setLeaveType(event.target.value);
+                clearFeedback();
+              }}
+              required
+              className={inputClass}
             >
-              Try again
-            </button>
+              <option value="">Select a leave type</option>
+
+              {leaveTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <label>
+              <span className="mb-2 block font-medium">
+                Start date *
+              </span>
+
+              <input
+                type="date"
+                value={startDate}
+                onChange={(event) => {
+                  setStartDate(event.target.value);
+                  clearFeedback();
+                }}
+                required
+                className={inputClass}
+              />
+            </label>
+
+            <label>
+              <span className="mb-2 block font-medium">
+                End date *
+              </span>
+
+              <input
+                type="date"
+                value={endDate}
+                min={startDate || undefined}
+                onChange={(event) => {
+                  setEndDate(event.target.value);
+                  clearFeedback();
+                }}
+                required
+                className={inputClass}
+              />
+            </label>
           </div>
-        ) : leaveTypes.length === 0 ? (
-          <p role="status" className="mt-8 text-gray-600">
-            No leave types are currently available.
+
+          <div
+            role="status"
+            className="mt-6 rounded-lg border border-white/30 bg-white/10 p-4"
+          >
+            <p className="font-semibold">
+              Total: {totalDays} {totalDays === 1 ? "day" : "days"}
+            </p>
+
+            <p className="mt-1 text-sm text-white/80">
+              Calendar days, including the start and end dates.
+            </p>
+          </div>
+
+          <label className="mt-6 block">
+            <span className="mb-2 block font-medium">
+              Reason {reasonRequired ? "*" : "(optional)"}
+            </span>
+
+            <textarea
+              value={reason}
+              onChange={(event) => {
+                setReason(event.target.value);
+                clearFeedback();
+              }}
+              placeholder="Enter the reason for your leave..."
+              required={reasonRequired}
+              maxLength={1000}
+              rows={6}
+              aria-describedby="reason-count"
+              className={`${inputClass} resize-y placeholder:text-gray-500`}
+            />
+          </label>
+
+          <p
+            id="reason-count"
+            className="mt-2 text-right text-sm text-white/80"
+          >
+            {reason.length}/1000 characters
           </p>
         ) : (
           <form
@@ -173,21 +212,23 @@ export default function RequestLeave() {
             <fieldset disabled={isSubmitting} className="min-w-0">
               <legend className="sr-only">Leave request details</legend>
 
-              <label className="block">
-                <span className="mb-2 block font-medium">
-                  Leave type *
-                </span>
+          {error && (
+            <p
+              role="alert"
+              className="mt-5 rounded-lg bg-white p-4 text-red-700"
+            >
+              {error}
+            </p>
+          )}
 
-                <select
-                  value={leaveType}
-                  onChange={(event) => {
-                    setLeaveType(event.target.value);
-                    clearFeedback();
-                  }}
-                  required
-                  className={inputClass}
-                >
-                  <option value="">Select a leave type</option>
+          {message && (
+            <p
+              role="status"
+              className="mt-5 rounded-lg bg-white p-4 text-[#5330a8]"
+            >
+              {message}
+            </p>
+          )}
 
                   {leaveTypes.map((type) => (
                     <option key={type.id} value={String(type.id)}>
