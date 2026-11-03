@@ -32,8 +32,12 @@
         </Grid>
         
         <!-- loading indicator -->
-        <TextBlock Grid.Row="1" Text="Loading..." Foreground="Gray"
-                   Visibility="{Binding ErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <TextBlock Grid.Row="1"
+           Text="Loading..."
+           Foreground="Gray"
+           Visibility="{Binding IsLoading,
+               Converter={StaticResource BoolToVisibilityConverter}}"/>
+
 
         <!-- Error banner for ErrorMessage -->
         <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap"

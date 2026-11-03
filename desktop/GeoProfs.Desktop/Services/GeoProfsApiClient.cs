@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Xps;
 
 namespace GeoProfs.Desktop.Services
 {
@@ -27,6 +28,8 @@ namespace GeoProfs.Desktop.Services
         {
             _http = new HttpClient
             {
+                // php artisan serve default
+                // load from config later
                 BaseAddress = new Uri("http://127.0.0.1:8000/api/")
             };
 
@@ -116,7 +119,7 @@ namespace GeoProfs.Desktop.Services
         public async Task<List<LeaveRequest>> GetPendingApprovalsAsync()
         {
             using var response = await _http.GetAsync(
-                "approvals/pending"
+                "manager/leave-requests"
             );
 
             await EnsureSuccessAsync(response);
@@ -129,33 +132,68 @@ namespace GeoProfs.Desktop.Services
             return result ?? new List<LeaveRequest>();
         }
 
+        // Configure these IDs to match your leave_statuses table.
+        private const int ApprovedStatusId = 0;
+        private const int RejectedStatusId = 0;
+
+
         /// <summary>
         /// Approves a leave request
         /// POST /api/approvals/{id}/approve
         /// </summary>
         public async Task ApproveAsync(int id)
         {
-            using var response = await _http.PostAsync(
-                $"approvals/{id}/approve",
-                null
-            );
+            using var response = await _http.PutAsJsonAsync(
+                $"leave-requests/{id}",
+                new
+                {
+                    status = "Goedgekeurd"
+                });
 
             await EnsureSuccessAsync(response);
         }
+
 
         /// <summary>
         /// Rejects a leave request
         /// POST /api/approvals/{id}/reject
         /// </summary>
-        public async Task RejectAsync(int id)
+        public async Task RejectAsync(int id, string reason)
         {
-            using var response = await _http.PostAsync(
-                $"approvals/{id}/reject",
-                null
+            using var response = await _http.PutAsJsonAsync(
+                $"leave-requests/{id}",
+                new
+                {
+                    status = "Afgekeurd",
+                    rejection_reason = reason
+                });
+
+            await EnsureSuccessAsync(response);
+        }
+
+        private async Task UpdateLeaveStatusAsync(int id, int statusId, string? rejectionReason)
+        {
+            if (statusId <= 0)
+            {
+                throw new ApiException(
+                    "Configure the approved and rejected status IDs first.",
+                    0
+                );
+            }
+
+            using var response = await _http.PutAsJsonAsync(
+                $"leave-requests/{id}",
+                new
+                {
+                    status_id = statusId,
+                    rejection_reason = rejectionReason
+                }
             );
 
             await EnsureSuccessAsync(response);
         }
+
+
 
         private static async Task EnsureSuccessAsync(
             HttpResponseMessage response)
@@ -194,7 +232,6 @@ namespace GeoProfs.Desktop.Services
         private class ApiErrorBody
         {
             public string? Message { get; set; }
-
             public Dictionary<string, string[]>? Errors { get; set; }
         }
     }
