@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "./api/client";
 
-export default function Login() {
+export default function Login({ onSignedIn })  {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ export default function Login() {
       await api.login(email.trim(), password);
 
       setPassword("");
-      setMessage("You are now signed in.");
+      onSignedIn();
     } catch (error) {
       setError(error.message || "Unable to sign in. Please try again.");
     } finally {
@@ -30,7 +30,7 @@ export default function Login() {
   }
 
   return (
-    <main className="grid min-h-[calc(100svh-80px)] place-items-center bg-linear-to-br from-[#f5f3ff] to-[#e0e7ff] p-6 font-sans text-[#1f2937] antialiased">
+    <main className="grid min-h-svh place-items-center bg-linear-to-br from-[#f5f3ff] to-[#e0e7ff] p-6 font-sans text-[#1f2937] antialiased">
       <div className="w-full max-w-[420px] rounded-[20px] bg-white p-10 shadow-[0_20px_50px_rgba(46,32,92,0.12)] max-[480px]:px-[22px] max-[480px]:py-7">
         <div className="grid h-[52px] w-[52px] place-items-center rounded-[14px] bg-[#6d28d9] text-xl font-bold text-white">
           GP
