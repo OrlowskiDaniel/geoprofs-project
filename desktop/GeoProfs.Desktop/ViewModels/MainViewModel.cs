@@ -1,6 +1,7 @@
-using System.Windows.Input;
 using GeoProfs.Desktop.Common;
+using GeoProfs.Desktop.Models;
 using GeoProfs.Desktop.Services;
+using System.Windows.Input;
 
 namespace GeoProfs.Desktop.ViewModels
 {
@@ -8,6 +9,7 @@ namespace GeoProfs.Desktop.ViewModels
     {
         private readonly IGeoProfsApiClient _apiClient;
 
+        private readonly PlanningSettings _planningSettings;
         private object? _currentView;
         public object? CurrentView
         {
@@ -22,11 +24,14 @@ namespace GeoProfs.Desktop.ViewModels
             set => SetProperty(ref _activeSection, value);
         }
 
+        
         public ICommand NavigateCommand { get; }
 
         public MainViewModel(IGeoProfsApiClient apiClient)
         {
             _apiClient = apiClient;
+
+            _planningSettings = new PlanningSettings();
 
             // Pass the parameter (obj) directly to the Navigate method
             NavigateCommand = new RelayCommand(obj => Navigate(obj as string));
@@ -45,6 +50,13 @@ namespace GeoProfs.Desktop.ViewModels
             {
                 case "Requests":
                     CurrentView = new ApprovalsViewModel(_apiClient);
+                    break;
+                case "Planning":
+                    CurrentView = new CalendarViewModel(_planningSettings);
+                    break;
+
+                case "Settings":
+                    CurrentView = new SettingsViewModel(_planningSettings);
                     break;
                 // Future sections go here:
                 // case "Overview": CurrentView = new OverviewViewModel(_apiClient); break;
