@@ -1,19 +1,46 @@
-// Tiny wrapper around fetch so every component talks to the API.
-// In dev, Vite proxies /api to the Laravel server (see vite.config.js).
 const BASE_URL = "/api";
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
+    const token = localStorage.getItem("token");
 
-  if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${await res.text()}`);
-  }
-  return res.json();
+    const res = await fetch(`${BASE_URL}${path}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...options.headers,
+        },
+        ...options,
+    });
+
+    if (!res.ok) {
+        throw new Error(`API error ${res.status}: ${await res.text()}`);
+    }
+
+    return res.json();
 }
 
 export const api = {
-  hello: () => request("/hello"),
+    login: (email, password) =>
+        request("/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+        }),
+
+    logout: () =>
+        request("/logout", { method: "POST" }),
+
+    getLeaveTypes: () =>
+        request("/leave-types"),
+
+    getLeaveRequests: () =>
+        request("/leave-requests"),
+
+    createLeaveRequest: (data) =>
+        request("/leave-requests", {
+            method: "POST",
+            body: JSON.stringify(data),
+        }),
+
+    getMe: () =>
+        request("/me"),
 };
