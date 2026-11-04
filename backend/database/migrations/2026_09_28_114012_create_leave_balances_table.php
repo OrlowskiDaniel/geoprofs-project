@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('leave_type_id')->constrained('leave_types');
             $table->integer('year');
             $table->integer('days_per_year');
-            $table->string('leave_balance_type');
             $table->timestamps();
         });
     }
