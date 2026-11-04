@@ -8,6 +8,7 @@ use App\Models\LeaveStatus;
 use App\Models\Notification;
 use App\Models\NotificationType;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class LeaveRequestController extends Controller
 {
@@ -145,5 +146,24 @@ class LeaveRequestController extends Controller
         $leaveRequest->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function testFunction(Request $request)
+    {
+        $token = $request->bearerToken();
+        $accessToken = PersonalAccessToken::findToken($token);
+        
+        if (!$accessToken) {
+            return response()->json(['message' => 'Invalid token'], 401);
+        }
+        $departmentId = $accessToken->tokenable->department_id;
+
+        $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($departmentId) {
+            $query->where('department_id', $departmentId);
+        })->get();
+
+        return response()->json([
+            'leaves' => $leaveRequest,
+        ]);
     }
 }

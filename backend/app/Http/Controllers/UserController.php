@@ -43,7 +43,7 @@ class UserController extends Controller
 
         $vacationDays = $user->getLeaveBalances()->where('leave_type_id', 1)->first();
         $sickDays = $user->getLeaveBalances()->where('leave_type_id', 2)->first();
-        $personalDays = $user->getLeaveBalances()->where('leave_type_id', 2)->first();
+        $personalDays = $user->getLeaveBalances()->where('leave_type_id', 3)->first();
 
         if($ownerOfAcount){
             return response()->json(['user' => [
