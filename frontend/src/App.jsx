@@ -88,7 +88,7 @@ export default function App() {
                     </a>
 
                     <span className="text-sm text-gray-600">
-                        {currentUser.first_name} · {currentUser.role}
+                        {currentUser.first_name} {currentUser.last_name} · {currentUser.role}
                     </span>
 
                     <div className="flex flex-wrap gap-2">
