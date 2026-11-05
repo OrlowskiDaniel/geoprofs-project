@@ -11,5 +11,6 @@ class NotificationTypeSeeder extends Seeder
     {
         DB::table('notification_types')->insert(['name' => 'Goedgekeurd']);
         DB::table('notification_types')->insert(['name' => 'Afgekeurd']);
+        DB::table('notification_types')->insert(['name' => 'Onvoorziene afwezigheid']);
     }
 }
