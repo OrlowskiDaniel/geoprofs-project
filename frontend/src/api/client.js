@@ -10,110 +10,46 @@ export function clearToken() {
 }
 
 async function request(path, options = {}) {
-  const token = getToken();
-  const headers = new Headers(options.headers);
+    const token = localStorage.getItem("token");
 
-  headers.set("Accept", "application/json");
-
-  if (options.body) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  let response;
-
-  try {
-    response = await fetch(`${BASE_URL}${path}`, {
-      ...options,
-      headers,
+    const res = await fetch(`${BASE_URL}${path}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...options.headers,
+        },
+        ...options,
     });
-  } catch {
-    throw new Error(
-      "Cannot connect to the server. Please check that the backend is running."
-    );
-  }
 
-  const text = await response.text();
-  let data = null;
-
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error("The server returned an unexpected response.");
+    if (!res.ok) {
+        throw new Error(`API error ${res.status}: ${await res.text()}`);
     }
-  }
 
-  if (!response.ok) {
-    const validationMessages = Object.values(data?.errors ?? {})
-      .flat()
-      .join(" ");
-
-    const error = new Error(
-      validationMessages ||
-        data?.message ||
-        `Request failed (${response.status}).`
-    );
-
-    error.status = response.status;
-    error.errors = data?.errors ?? {};
-
-    throw error;
-  }
-
-  return data;
+    return res.json();
 }
 
 export const api = {
-  async login(email, password) {
-    const data = await request("/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    login: (email, password) =>
+        request("/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+        }),
 
-    if (!data?.token) {
-      throw new Error("The server did not return a login token.");
-    }
+    logout: () =>
+        request("/logout", { method: "POST" }),
 
-    sessionStorage.setItem(TOKEN_KEY, data.token);
+    getLeaveTypes: () =>
+        request("/leave-types"),
 
-    return data;
-  },
+    getLeaveRequests: () =>
+        request("/leave-requests"),
 
-  async logout() {
-    await request("/logout", {
-      method: "POST",
-    });
+    createLeaveRequest: (data) =>
+        request("/leave-requests", {
+            method: "POST",
+            body: JSON.stringify(data),
+        }),
 
-    clearToken();
-  },
-
-  getLeaveTypes() {
-    return request("/leave-types");
-  },
-
-  getLeaveRequests() {
-    return request("/leave-requests");
-  },
-
-  createLeaveRequest(data) {
-    return request("/leave-requests", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  },
-
-  changePassword(currentPassword, newPassword, confirmation) {
-    return request("/change-password", {
-      method: "POST",
-      body: JSON.stringify({
-        current_password: currentPassword,
-        new_password: newPassword,
-        new_password_confirmation: confirmation,
-      }),
-    });
-  },
+    getMe: () =>
+        request("/me"),
 };
