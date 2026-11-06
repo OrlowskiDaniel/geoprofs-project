@@ -7,4 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class LeaveBalance extends Model
 {
     protected $fillable = ['user_id', 'leave_type_id', 'year', 'days_per_year', 'leave_balance_type'];
+
+    public function leaveType()
+    {
+        return $this->belongsTo(LeaveType::class);
+    }
 }

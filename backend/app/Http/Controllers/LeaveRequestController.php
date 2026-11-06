@@ -50,7 +50,8 @@ class LeaveRequestController extends Controller
      *
      * Creates a new leave request for the logged-in employee. The status is
      * automatically set to "In behandeling". If the leave type deducts from
-     * the balance, the remaining balance is checked first.
+     * the balance, the remaining balance is checked first using days_per_year
+     * from the leave_balances table for the correct year.
      *
      * @param int leave_type_id
      * @param string start_date Format: YYYY-MM-DD
@@ -75,17 +76,14 @@ class LeaveRequestController extends Controller
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
 
         if ($leaveType->deducts_from_balance) {
+            $year = \Carbon\Carbon::parse($validated['start_date'])->year;
+
             $balance = LeaveBalance::where('user_id', $request->user()->id)
                 ->where('leave_type_id', $validated['leave_type_id'])
-                ->where('year', now()->year)
+                ->where('year', $year)
                 ->first();
 
-            $usedDays = LeaveRequest::where('user_id', $request->user()->id)
-                ->where('leave_type_id', $validated['leave_type_id'])
-                ->whereHas('status', fn($q) => $q->where('name', 'Goedgekeurd'))
-                ->sum('number_of_days');
-
-            $remainingDays = ($balance->days_per_year ?? 0) - $usedDays;
+            $remainingDays = $balance->days_per_year ?? 0;
 
             if ($validated['number_of_days'] > $remainingDays) {
                 return response()->json(['message' => 'Niet genoeg verlofdagen beschikbaar'], 422);
@@ -106,7 +104,7 @@ class LeaveRequestController extends Controller
             $employee = $request->user();
 
             // Find the manager of the employee's department
-            $managerId = \DB::table('departments')
+            $managerId = DB::table('departments')
                 ->where('id', $employee->department_id)
                 ->value('manager_id');
 
@@ -142,6 +140,7 @@ class LeaveRequestController extends Controller
      * Only managers, office managers and administrators can use this endpoint.
      * A manager can only review requests from employees in their department.
      * A notification is automatically sent to the employee when the status changes.
+     * Balance is deducted on approval and restored on rejection using a transaction.
      *
      * @param string status Either "Goedgekeurd" or "Afgekeurd"
      * @param string|null rejection_reason Required when status is "Afgekeurd"
@@ -166,7 +165,7 @@ class LeaveRequestController extends Controller
         }
 
         // Only allow a manager to review requests from their department
-        $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($manager) {
+        $leaveRequest = LeaveRequest::with(['status', 'leaveType'])->whereHas('user', function ($query) use ($manager) {
             $query->where('department_id', $manager->department_id);
         })->findOrFail($id);
 
@@ -181,25 +180,47 @@ class LeaveRequestController extends Controller
 
         // Only send notification if the status actually changes
         $statusChanged = $leaveRequest->status_id !== $status->id;
+        $previousStatusName = $leaveRequest->status?->name;
 
-        $leaveRequest->update([
-            'status_id' => $status->id,
-            'rejection_reason' => $validated['rejection_reason'] ?? null,
-            'reviewed_by' => $manager->id,
-            'reviewed_at' => now(),
-        ]);
-
-        if ($statusChanged) {
-            $notificationType = NotificationType::where('name', $validated['status'])->first();
-
-            Notification::create([
-                'receiver_id' => $leaveRequest->user_id,
-                'leave_request_id' => $leaveRequest->id,
-                'notification_type_id' => $notificationType->id,
-                'message' => 'Je verlofaanvraag is ' . strtolower($validated['status']) . '.',
-                'is_read' => false,
+        DB::transaction(function () use ($leaveRequest, $status, $validated, $manager, $statusChanged, $previousStatusName) {
+            $leaveRequest->update([
+                'status_id' => $status->id,
+                'rejection_reason' => $validated['rejection_reason'] ?? null,
+                'reviewed_by' => $manager->id,
+                'reviewed_at' => now(),
             ]);
-        }
+
+            if ($statusChanged) {
+                $notificationType = NotificationType::where('name', $validated['status'])->first();
+
+                Notification::create([
+                    'receiver_id' => $leaveRequest->user_id,
+                    'leave_request_id' => $leaveRequest->id,
+                    'notification_type_id' => $notificationType->id,
+                    'message' => 'Je verlofaanvraag is ' . strtolower($validated['status']) . '.',
+                    'is_read' => false,
+                ]);
+
+                $leaveType = $leaveRequest->leaveType;
+                $year = \Carbon\Carbon::parse($leaveRequest->start_date)->year;
+
+                // Deduct balance when approved
+                if ($validated['status'] === 'Goedgekeurd' && $leaveType?->deducts_from_balance) {
+                    LeaveBalance::where('user_id', $leaveRequest->user_id)
+                        ->where('leave_type_id', $leaveRequest->leave_type_id)
+                        ->where('year', $year)
+                        ->decrement('days_per_year', $leaveRequest->number_of_days);
+                }
+
+                // Restore balance when rejected after being approved
+                if ($validated['status'] === 'Afgekeurd' && $leaveType?->deducts_from_balance && $previousStatusName === 'Goedgekeurd') {
+                    LeaveBalance::where('user_id', $leaveRequest->user_id)
+                        ->where('leave_type_id', $leaveRequest->leave_type_id)
+                        ->where('year', $year)
+                        ->increment('days_per_year', $leaveRequest->number_of_days);
+                }
+            }
+        });
 
         return response()->json(
             $leaveRequest->load(['leaveType', 'status', 'user', 'reviewer'])
@@ -209,13 +230,32 @@ class LeaveRequestController extends Controller
     /**
      * Delete a leave request.
      *
-     * Permanently removes a leave request from the database.
+     * Only the owner of the request can delete it.
+     * If the request was approved and the leave type deducts from balance,
+     * the days are restored to the user's balance.
      * Returns 204 No Content on success.
      */
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
-        $leaveRequest = LeaveRequest::findOrFail($id);
-        $leaveRequest->delete();
+        $leaveRequest = LeaveRequest::with(['status', 'leaveType'])->findOrFail($id);
+
+        if ($leaveRequest->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Geen toegang'], 403);
+        }
+
+        DB::transaction(function () use ($leaveRequest) {
+            // Restore balance if the request was approved, using the year from start_date
+            if ($leaveRequest->status?->name === 'Goedgekeurd' && $leaveRequest->leaveType?->deducts_from_balance) {
+                $year = \Carbon\Carbon::parse($leaveRequest->start_date)->year;
+
+                LeaveBalance::where('user_id', $leaveRequest->user_id)
+                    ->where('leave_type_id', $leaveRequest->leave_type_id)
+                    ->where('year', $year)
+                    ->increment('days_per_year', $leaveRequest->number_of_days);
+            }
+
+            $leaveRequest->delete();
+        });
 
         return response()->json(null, 204);
     }
