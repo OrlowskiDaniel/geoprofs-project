@@ -18,6 +18,7 @@ class LeaveBalanceController extends Controller
         $balances = LeaveBalance::with('leaveType')
             ->where('user_id', $request->user()->id)
             ->where('year', now()->year)
+            ->whereHas('leaveType', fn($q) => $q->where('deducts_from_balance', true))
             ->get();
 
         return response()->json($balances);
