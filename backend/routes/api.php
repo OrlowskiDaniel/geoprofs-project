@@ -6,6 +6,7 @@ use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\ManagerLeaveRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PlanningController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -20,6 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/leave-types', [LeaveTypeController::class, 'index']);
 
     Route::get('/manager/leave-requests', [ManagerLeaveRequestController::class, 'index']);
+    Route::get('/manager/notifications', [NotificationController::class, 'managerNotifications']);
+    Route::get('/manager/planning', [PlanningController::class, 'index']);
 
     Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
     Route::get('/leave-requests/{id}', [LeaveRequestController::class, 'show']);
