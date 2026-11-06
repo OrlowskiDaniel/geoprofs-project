@@ -37,4 +37,4 @@ Route::middleware('auth:sanctum')->post(
     [AuthController::class, 'changePassword']
 );
 
-Route::get('/testLeaveRequest', [LeaveRequestController::class, 'testFunction']);
+Route::get('/departmentLeaves', [LeaveRequestController::class, 'acceptedLeaveRequest']);
