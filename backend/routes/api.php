@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LeaveTypeController;
+use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\ManagerLeaveRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
@@ -19,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile/{id}', [UserController::class, 'show']);
 
     Route::get('/leave-types', [LeaveTypeController::class, 'index']);
+    Route::get('/leave-balance/me', [LeaveBalanceController::class, 'me']);
 
     Route::get('/manager/leave-requests', [ManagerLeaveRequestController::class, 'index']);
     Route::get('/manager/notifications', [NotificationController::class, 'managerNotifications']);
@@ -31,6 +33,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::get('/manager/notifications', [NotificationController::class, 'managerNotifications']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });
