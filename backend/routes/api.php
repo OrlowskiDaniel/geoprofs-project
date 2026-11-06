@@ -10,15 +10,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanningController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'login']);
-
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
-
     Route::get('/me', [UserController::class, 'me']);
-    Route::get('/profile/{id}', [UserController::class, 'show']);
-
     Route::get('/leave-types', [LeaveTypeController::class, 'index']);
     Route::get('/leave-balance/me', [LeaveBalanceController::class, 'me']);
 
@@ -35,3 +28,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });
+
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/profile/{id}', [UserController::class, 'show']);
+
+Route::middleware('auth:sanctum')->post(
+    '/logout',
+    [AuthController::class, 'logout']
+);
+
+Route::middleware('auth:sanctum')->post(
+    '/change-password',
+    [AuthController::class, 'changePassword']
+);
+
+Route::get('/departmentLeaves', [LeaveRequestController::class, 'acceptedLeaveRequest']);
