@@ -9,12 +9,13 @@ use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
-Route::post('/change-password', [AuthController::class, 'changePassword']);
-Route::get('/profile/{id}', [UserController::class, 'show']);
-
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+
+    Route::get('/me', [UserController::class, 'me']);
+    Route::get('/profile/{id}', [UserController::class, 'show']);
 
     Route::get('/leave-types', [LeaveTypeController::class, 'index']);
 
@@ -27,5 +28,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/manager/notifications', [NotificationController::class, 'managerNotifications']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });

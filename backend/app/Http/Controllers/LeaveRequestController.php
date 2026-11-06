@@ -7,7 +7,9 @@ use App\Models\LeaveBalance;
 use App\Models\LeaveStatus;
 use App\Models\Notification;
 use App\Models\NotificationType;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LeaveRequestController extends Controller
 {
@@ -95,6 +97,41 @@ class LeaveRequestController extends Controller
             'status_id' => $pendingStatus->id,
             ...$validated,
         ]);
+
+        // Check if the request is unexpected (start date is today or tomorrow)
+        $startDate = \Carbon\Carbon::parse($validated['start_date'])->startOfDay();
+        $isUnexpected = $startDate->lte(now()->addDay()->startOfDay());
+
+        if ($isUnexpected) {
+            $employee = $request->user();
+
+            // Find the manager of the employee's department
+            $managerId = \DB::table('departments')
+                ->where('id', $employee->department_id)
+                ->value('manager_id');
+
+            if ($managerId) {
+                $notificationType = NotificationType::where('name', 'Onvoorziene afwezigheid')->first();
+
+                Notification::create([
+                    'receiver_id' => $managerId,
+                    'leave_request_id' => $leaveRequest->id,
+                    'notification_type_id' => $notificationType->id,
+                    'message' => $employee->first_name . ' ' . $employee->last_name . ' heeft een onvoorziene afwezigheid gemeld voor ' . $validated['start_date'] . '.',
+                    'is_read' => false,
+                ]);
+            }
+
+            // Write to audit log
+            AuditLog::create([
+                'user_id' => $request->user()->id,
+                'action' => 'onvoorziene_afwezigheid',
+                'entity_type' => 'leave_request',
+                'entity_id' => $leaveRequest->id,
+                'new_value' => 'start_date: ' . $validated['start_date'],
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         return response()->json($leaveRequest, 201);
     }

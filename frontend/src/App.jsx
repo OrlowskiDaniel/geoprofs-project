@@ -2,132 +2,134 @@ import { useEffect, useState } from "react";
 import Login from "./Login";
 import PersonalData from "./PersonalData";
 import RequestLeave from "./RequestLeave";
-import LeaveOverview from "./LeaveOverview";
-import { api, clearToken } from "./api/client";
+import UserManagement from "./UserManagement";
+import { api } from "./api/client";
+
+// Map backend role names to frontend permissions
+const rolePermissions = {
+    Werknemer: ["requestLeave", "viewPersonalData"],
+    Manager: ["requestLeave", "viewPersonalData", "checkLeaveRequests"],
+    "Office Manager": ["requestLeave", "viewPersonalData", "checkLeaveRequests", "manageUsers"],
+    Administrator: ["requestLeave", "viewPersonalData", "checkLeaveRequests", "manageUsers", "viewAuditTrail"],
+};
+
+function hasPermission(user, permission) {
+    if (!user) return false;
+    return (rolePermissions[user.role] ?? []).includes(permission);
+}
 
 const navigation = [
-  { label: "Change password", href: "#personal-data" },
-  { label: "Request leave", href: "#request-leave" },
-  { label: "Leave overview", href: "#leave-overview" },
+    { label: "Personal data", href: "#personal-data", permission: "viewPersonalData" },
+    { label: "Request leave", href: "#request-leave", permission: "requestLeave" },
+    { label: "Audit trail", href: "#audit-trail", permission: "viewAuditTrail" },
+    { label: "User management", href: "#users", permission: "manageUsers" },
 ];
 
 export default function App() {
-  const [page, setPage] = useState(window.location.hash);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [logoutError, setLogoutError] = useState("");
+    const [page, setPage] = useState(window.location.hash);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    function updatePage() {
-      setPage(window.location.hash);
-      window.scrollTo(0, 0);
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            setLoading(false);
+            return;
+        }
+
+        api.getMe()
+            .then(setCurrentUser)
+            .catch(() => {
+                localStorage.removeItem("token");
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
+        function updatePage() {
+            setPage(window.location.hash);
+            window.scrollTo(0, 0);
+        }
+        window.addEventListener("hashchange", updatePage);
+        return () => window.removeEventListener("hashchange", updatePage);
+    }, []);
+
+    if (loading) return null;
+
+    if (!currentUser) return <Login onLogin={setCurrentUser} />;
+
+    const visibleNavigation = navigation.filter(
+        (item) => !item.permission || hasPermission(currentUser, item.permission)
+    );
+
+    const activePage = visibleNavigation.some((item) => item.href === page)
+        ? page
+        : visibleNavigation[0]?.href ?? "#";
+
+    function handleLogout() {
+        api.logout().finally(() => {
+            localStorage.removeItem("token");
+            setCurrentUser(null);
+            window.location.hash = "";
+        });
     }
 
-    window.addEventListener("hashchange", updatePage);
-
-    return () => {
-      window.removeEventListener("hashchange", updatePage);
-    };
-  }, []);
-
-  function handleSignedIn() {
-    setIsAuthenticated(true);
-    setLogoutError("");
-    window.location.hash = "personal-data";
-  }
-
-  async function handleLogout() {
-    if (isLoggingOut) return;
-
-    setIsLoggingOut(true);
-    setLogoutError("");
-
-    try {
-      await api.logout();
-    } catch (error) {
-      if (error.status !== 401) {
-        setLogoutError("Unable to log out. Please try again.");
-        return;
-      }
-    } finally {
-      setIsLoggingOut(false);
-    }
-
-    clearToken();
-    setIsAuthenticated(false);
-    window.location.hash = "";
-  }
-
-  if (!isAuthenticated) {
-    return <Login onSignedIn={handleSignedIn} />;
-  }
-
-  const activePage = navigation.some((item) => item.href === page)
-    ? page
-    : "#personal-data";
-
-  return (
-    <div className="min-h-svh bg-[#f7f5ff] font-sans">
-      <header className="sticky top-0 z-30 border-b border-purple-100 bg-white shadow-sm">
-        <nav
-          aria-label="Main navigation"
-          className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4"
-        >
-          <a
-            href="#personal-data"
-            className="text-xl font-bold text-[#6335d1]"
-          >
-            GeoProfs
-          </a>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {navigation.map((item) => {
-              const isActive = activePage === item.href;
-
-              return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`rounded-lg px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6335d1] ${
-                    isActive
-                      ? "bg-[#6335d1] text-white"
-                      : "text-[#6335d1] hover:bg-[#eee8ff]"
-                  }`}
+    return (
+        <div className="min-h-svh bg-[#f7f5ff]">
+            <header className="sticky top-0 z-30 border-b border-purple-100 bg-white shadow-sm">
+                <nav
+                    aria-label="Main navigation"
+                    className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4"
                 >
-                  {item.label}
-                </a>
-              );
-            })}
+                    <a href="#" className="text-xl font-bold text-[#6335d1]">
+                        GeoProfs
+                    </a>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="cursor-pointer rounded-lg border border-purple-200 px-4 py-2 text-sm font-semibold text-[#6335d1] hover:bg-[#eee8ff] disabled:opacity-50"
-            >
-              {isLoggingOut ? "Logging out..." : "Log out"}
-            </button>
-          </div>
-        </nav>
-      </header>
+                    <span className="text-sm text-gray-600">
+                        {currentUser.first_name} {currentUser.last_name} · {currentUser.role}
+                    </span>
 
-      {logoutError && (
-        <p
-          role="alert"
-          className="px-5 py-3 text-center text-red-700"
-        >
-          {logoutError}
-        </p>
-      )}
+                    <div className="flex flex-wrap gap-2">
+                        {visibleNavigation.map((item) => {
+                            const isActive = activePage === item.href;
+                            return (
+                                <a
+                                    key={item.href}
+                                    href={item.href}
+                                    aria-current={isActive ? "page" : undefined}
+                                    className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+                                        isActive
+                                            ? "bg-[#6335d1] text-white"
+                                            : "text-[#6335d1] hover:bg-[#eee8ff]"
+                                    }`}
+                                >
+                                    {item.label}
+                                </a>
+                            );
+                        })}
 
-      {activePage === "#leave-overview" ? (
-        <LeaveOverview />
-      ) : activePage === "#request-leave" ? (
-        <RequestLeave />
-      ) : (
-        <PersonalData />
-      )}
-    </div>
-  );
+                        <button
+                            onClick={handleLogout}
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </nav>
+            </header>
+
+            {activePage === "#personal-data" ? (
+                <PersonalData />
+            ) : activePage === "#request-leave" ? (
+                <RequestLeave />
+            ) : activePage === "#audit-trail" ? (
+                <AuditTrail />
+            ) : activePage === "#users" ? (
+                <UserManagement />
+            ) : (
+                <RequestLeave />
+            )}
+        </div>
+    );
 }

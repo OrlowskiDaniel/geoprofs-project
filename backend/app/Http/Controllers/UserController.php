@@ -9,6 +9,23 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
 
 class UserController extends Controller
 {
+    /**
+     * Get the currently logged-in user with their role.
+     *
+     * Used by the frontend to determine which pages the user can access.
+     */
+    public function me(Request $request)
+    {
+        $user = $request->user()->load('role');
+
+        return response()->json([
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'role' => $user->role?->name,
+        ]);
+    }
+
     public function show(Request $request, int $id)
     {
         $user = User::where('id', $id)->firstOrFail();

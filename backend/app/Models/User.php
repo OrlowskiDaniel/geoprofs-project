@@ -33,4 +33,9 @@ class User extends Authenticatable
         'active',
         'employment_start_date',
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }
