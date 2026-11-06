@@ -10,7 +10,12 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    // POST /api/login
+    /**
+     * Login and receive a Bearer token.
+     *
+     * Authenticate with your email and password. Use the returned token as
+     * `Authorization: Bearer <token>` on all protected endpoints.
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -31,7 +36,11 @@ class AuthController extends Controller
         return response()->json(['token' => $token]);
     }
 
-    // POST /api/logout
+    /**
+     * Logout and invalidate the current token.
+     *
+     * Deletes the current Bearer token so it can no longer be used.
+     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -39,6 +48,12 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out']);
     }
 
+    /**
+     * Change the password of the logged-in user.
+     *
+     * Only works when `must_change_password` is set to true on the user.
+     * Requires the current password and a new password with confirmation.
+     */
     public function changePassword(Request $request)
     {
         $request->validate([

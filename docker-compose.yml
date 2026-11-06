@@ -1,8 +1,3 @@
-# Optional: gives everyone on the team an identical MySQL instance without
-# installing MySQL locally. Run: docker compose up -d
-# Then point backend/.env at DB_HOST=127.0.0.1, DB_PORT=3306, DB_DATABASE=geoprofs,
-# DB_USERNAME=geoprofs, DB_PASSWORD=secret (matching below).
-
 services:
   mysql:
     image: mysql:8.0
