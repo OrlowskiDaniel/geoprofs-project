@@ -1,4 +1,13 @@
 const BASE_URL = "/api";
+const TOKEN_KEY = "geoprofs_token";
+
+export function getToken() {
+  return sessionStorage.getItem(TOKEN_KEY);
+}
+
+export function clearToken() {
+  sessionStorage.removeItem(TOKEN_KEY);
+}
 
 async function request(path, options = {}) {
     const token = localStorage.getItem("token");

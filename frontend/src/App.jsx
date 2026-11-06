@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Login from "./Login";
 import PersonalData from "./PersonalData";
-import AuditTrail from "./AuditTrail";
 import RequestLeave from "./RequestLeave";
 import UserManagement from "./UserManagement";
 import { api } from "./api/client";
