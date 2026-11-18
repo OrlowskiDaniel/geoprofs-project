@@ -9,6 +9,8 @@ use App\Models\Notification;
 use App\Models\NotificationType;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\DB;
 
 class LeaveRequestController extends Controller
@@ -258,5 +260,43 @@ class LeaveRequestController extends Controller
         });
 
         return response()->json(null, 204);
+    }
+
+    public function acceptedLeaveRequest(Request $request)
+    {
+        $isManager = false;
+        $token = $request->bearerToken();
+        $accessToken = PersonalAccessToken::findToken($token);
+        
+        if (!$accessToken) {
+            return response()->json(['message' => 'Invalid token'], 401);
+        }
+        $departmentId = $accessToken->tokenable->department_id;
+
+        if($accessToken->tokenable->role_id != 1){
+            $isManager = true;
+        }
+
+        $users = count(User::where('department_id', $departmentId)->get());
+
+        if($isManager){
+            $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($departmentId) {
+                $query->where('department_id', $departmentId);
+            })->where('status_id', 2)->get();
+
+            return response()->json([
+                'departmentSize' => $users,
+                'leaves' => $leaveRequest,
+            ]);
+        }else{
+            $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($departmentId) {
+                $query->where('department_id', $departmentId);
+            })->where('status_id', 2)->select('start_date', 'end_date')->get();
+
+            return response()->json([
+                'departmentSize' => $users,
+                'leaves' => $leaveRequest,
+            ]);
+        }
     }
 }
