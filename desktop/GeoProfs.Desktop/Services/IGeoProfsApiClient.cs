@@ -27,5 +27,8 @@ namespace GeoProfs.Desktop.Services
         // POST /api/approvals/{id}/reject
         Task RejectAsync(int id, string reason);
 
+        // GET /api/manager/planning?date=...&date_end=...
+        Task<StaffingPlanningResponse> GetPlanningAsync(DateTime date, DateTime? dateEnd = null);
+
     }
 }

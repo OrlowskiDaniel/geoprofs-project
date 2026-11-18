@@ -1,11 +1,5 @@
 ﻿using GeoProfs.Desktop.Common;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GeoProfs.Desktop.Models
 {
@@ -13,6 +7,7 @@ namespace GeoProfs.Desktop.Models
     {
         private DateTime? _date;
         private int? _employeeCount;
+        private int? _absentCount;
         private StaffingStatus _status;
         private bool _isCurrentMonth;
         private bool _isSelected;
@@ -36,6 +31,12 @@ namespace GeoProfs.Desktop.Models
         {
             get => _employeeCount;
             set => SetProperty(ref _employeeCount, value);
+        }
+
+        public int? AbsentCount
+        {
+            get => _absentCount;
+            set => SetProperty(ref _absentCount, value);
         }
 
         public StaffingStatus Status

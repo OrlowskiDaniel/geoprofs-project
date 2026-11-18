@@ -52,7 +52,7 @@ namespace GeoProfs.Desktop.ViewModels
                     CurrentView = new ApprovalsViewModel(_apiClient);
                     break;
                 case "Planning":
-                    CurrentView = new CalendarViewModel(_planningSettings);
+                    CurrentView = new CalendarViewModel(_planningSettings, _apiClient);
                     break;
 
                 case "Settings":
