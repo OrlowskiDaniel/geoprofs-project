@@ -1,0 +1,58 @@
+<Window x:Class="GeoProfs.Desktop.Views.RejectDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d"
+        Title="Reject request"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        MinWidth="420"
+        MinHeight="220">
+
+    <Border Padding="16" Background="White">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Reject request" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+
+            <!-- details -->
+            <StackPanel Grid.Row="1" Margin="0,12,0,8">
+                <TextBlock Text="Employee:" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding EmployeeName}" Foreground="#333" />
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Start" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding StartDate, StringFormat=d}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="End" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding EndDate, StringFormat=d}" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- reason -->
+            <StackPanel Grid.Row="2">
+                <TextBlock Text="Reason (required)" FontWeight="SemiBold" />
+                <TextBox x:Name="ReasonTextBox" AcceptsReturn="True" Height="90" TextWrapping="Wrap" Margin="0,6,0,0" />
+            </StackPanel>
+
+            <!-- actions -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                <Button Content="Cancel" Width="84" Margin="0,0,8,0" Click="Cancel_Click" />
+                <Button Content="Reject" Width="100" Background="#E74C3C" Foreground="White" FontWeight="SemiBold" Click="Reject_Click" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

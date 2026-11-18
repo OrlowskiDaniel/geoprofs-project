@@ -8,10 +8,4 @@
     <RootNamespace>GeoProfs.Desktop</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Nothing extra needed for the hello-world demo: HttpClient and
-         System.Text.Json ship with .NET. Add packages here as the real
-         app grows (e.g. CommunityToolkit.Mvvm for cleaner ViewModels). -->
-  </ItemGroup>
-
 </Project>
