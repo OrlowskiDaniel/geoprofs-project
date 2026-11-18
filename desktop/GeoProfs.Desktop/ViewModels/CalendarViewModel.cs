@@ -1,9 +1,12 @@
-﻿using System;
+﻿using GeoProfs.Desktop.Common;
+using GeoProfs.Desktop.Models;
+using GeoProfs.Desktop.Services;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using GeoProfs.Desktop.Models;
-using GeoProfs.Desktop.Common;
 
 namespace GeoProfs.Desktop.ViewModels
 {
@@ -11,8 +14,29 @@ namespace GeoProfs.Desktop.ViewModels
     {
         public ObservableCollection<DayModel> Days { get; set; }
 
-        private readonly PlanningSettings _planningSettings;
+        private readonly IGeoProfsApiClient _apiClient;
         private DateTime _currentMonth;
+        private readonly PlanningSettings _planningSettings;
+        private StaffingPlanningResponse? _planningSummary;
+        public StaffingPlanningResponse? PlanningSummary
+        {
+            get => _planningSummary;
+            private set => SetProperty(ref _planningSummary, value);
+        }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            private set => SetProperty(ref _isLoading, value);
+        }
+
+        private string _planningError = "";
+        public string PlanningError
+        {
+            get => _planningError;
+            private set => SetProperty(ref _planningError, value);
+        }
 
         public DateTime CurrentMonth
         {
@@ -44,26 +68,8 @@ namespace GeoProfs.Desktop.ViewModels
                 if (_selectedDay != null)
                 {
                     _selectedDay.IsSelected = true;
-                    EmployeeCountInput =
-                        _selectedDay.EmployeeCount?.ToString() ?? "";
-                }
-                else
-                {
-                    EmployeeCountInput = "";
                 }
 
-                OnPropertyChanged();
-            }
-        }
-
-        private string _employeeCountInput;
-
-        public string EmployeeCountInput
-        {
-            get => _employeeCountInput;
-            set
-            {
-                _employeeCountInput = value;
                 OnPropertyChanged();
             }
         }
@@ -73,11 +79,13 @@ namespace GeoProfs.Desktop.ViewModels
         public ICommand PreviousMonthCommand { get; }
         public ICommand NextMonthCommand { get; }
         public ICommand SelectDayCommand { get; }
-        public ICommand SaveEmployeesCommand { get; }
 
-        public CalendarViewModel(PlanningSettings planningSettings)
+        public CalendarViewModel(
+            PlanningSettings planningSettings,
+            IGeoProfsApiClient apiClient)
         {
             _planningSettings = planningSettings;
+            _apiClient = apiClient;
 
             Days = new ObservableCollection<DayModel>();
 
@@ -95,15 +103,8 @@ namespace GeoProfs.Desktop.ViewModels
             SelectDayCommand =
                 new RelayCommand(day => SelectDay(day as DayModel));
 
-            SaveEmployeesCommand =
-                new RelayCommand(_ => SaveEmployees());
-
-            // listen for changes made in SettingsView
-            _planningSettings.PropertyChanged +=
-                (sender, args) => UpdateAllStatuses();
-
             GenerateCalendar();
-            AddSampleData();
+            _ = LoadPlanningSummaryAsync();
         }
 
         private void ChangeMonth(int amount)
@@ -113,9 +114,82 @@ namespace GeoProfs.Desktop.ViewModels
             SelectedDay = null;
 
             GenerateCalendar();
-            AddSampleData();
+            _ = LoadPlanningSummaryAsync();
         }
 
+        private async Task LoadPlanningSummaryAsync()
+        {
+            IsLoading = true;
+            PlanningError = "";
+            PlanningSummary = null;
+
+            try
+            {
+                DateTime monthStart = CurrentMonth.Date;
+
+                DateTime monthEnd = monthStart
+                    .AddMonths(1)
+                    .AddDays(-1);
+
+                var result = await _apiClient.GetPlanningAsync(
+                    monthStart,
+                    monthEnd
+                );
+
+                PlanningSummary = result;
+
+                // Update each calendar day
+                foreach (var dailyData in result.Days)
+                {
+                    var calendarDay = Days.FirstOrDefault(d =>
+                        d.Date.HasValue &&
+                        d.Date.Value.Date == dailyData.Date.Date
+                    );
+
+                    if (calendarDay == null)
+                        continue;
+
+                    calendarDay.EmployeeCount = dailyData.Present;
+                    calendarDay.AbsentCount = dailyData.Absent;
+
+                    calendarDay.Status = GetStaffingStatus(
+                        dailyData.Present
+                    );
+                }
+            }
+            catch (ApiException ex)
+            {
+                PlanningError = ex.Message;
+            }
+            catch (HttpRequestException ex)
+            {
+                PlanningError =
+                    $"Could not reach the planning API: {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                PlanningError =
+                    $"An unexpected error occurred: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+        private StaffingStatus GetStaffingStatus(int present)
+        {
+            if (present <= _planningSettings.NotEnoughMax)
+            {
+                return StaffingStatus.NotEnough;
+            }
+
+            if (present <= _planningSettings.OkayMax)
+            {
+                return StaffingStatus.Okay;
+            }
+
+            return StaffingStatus.Optimal;
+        }
         private void GenerateCalendar()
         {
             Days.Clear();
@@ -156,86 +230,5 @@ namespace GeoProfs.Desktop.ViewModels
             SelectedDay = day;
         }
 
-        private void SaveEmployees()
-        {
-            if (SelectedDay == null)
-                return;
-
-            if (string.IsNullOrWhiteSpace(EmployeeCountInput))
-            {
-                SelectedDay.EmployeeCount = null;
-            }
-            else if (int.TryParse(
-                EmployeeCountInput, out int employees)
-                && employees >= 0)
-            {
-                SelectedDay.EmployeeCount = employees;
-            }
-            else
-            {
-                return;
-            }
-
-            UpdateStatus(SelectedDay);
-        }
-
-        private void UpdateStatus(DayModel day)
-        {
-            if (!day.EmployeeCount.HasValue)
-            {
-                day.Status = StaffingStatus.None;
-            }
-            else if (day.EmployeeCount.Value <=
-                     _planningSettings.NotEnoughMax)
-            {
-                day.Status = StaffingStatus.NotEnough;
-            }
-            else if (day.EmployeeCount.Value <=
-                     _planningSettings.OkayMax)
-            {
-                day.Status = StaffingStatus.Okay;
-            }
-            else
-            {
-                day.Status = StaffingStatus.Optimal;
-            }
-        }
-
-        private void UpdateAllStatuses()
-        {
-            foreach (var day in Days)
-            {
-                UpdateStatus(day);
-            }
-        }
-
-        private void AddSampleData()
-        {
-            // example data for September
-            // *! remove this method when the API is ready
-
-            if (CurrentMonth.Month != 9)
-                return;
-
-            SetSampleEmployees(1, 5);
-            SetSampleEmployees(2, 7);
-            SetSampleEmployees(3, 11);
-            SetSampleEmployees(29, 7);
-            SetSampleEmployees(30, 7);
-        }
-
-        private void SetSampleEmployees(int date, int employees)
-        {
-            var day = Days.FirstOrDefault(d =>
-                d.IsCurrentMonth &&
-                d.Date.HasValue &&
-                d.Date.Value.Day == date);
-
-            if (day != null)
-            {
-                day.EmployeeCount = employees;
-                UpdateStatus(day);
-            }
-        }
     }
 }

@@ -23,27 +23,6 @@
 
             <Style.Triggers>
 
-                <!-- not enough employees -->
-                <DataTrigger Binding="{Binding Status}"
-                             Value="{x:Static models:StaffingStatus.NotEnough}">
-                    <Setter Property="Background"
-                            Value="#F8B4B4"/>
-                </DataTrigger>
-
-                <!-- okay / busy -->
-                <DataTrigger Binding="{Binding Status}"
-                             Value="{x:Static models:StaffingStatus.Okay}">
-                    <Setter Property="Background"
-                            Value="#FFE58A"/>
-                </DataTrigger>
-
-                <!-- optimal -->
-                <DataTrigger Binding="{Binding Status}"
-                             Value="{x:Static models:StaffingStatus.Optimal}">
-                    <Setter Property="Background"
-                            Value="White"/>
-                </DataTrigger>
-
                 <!-- days outside the current month -->
                 <DataTrigger Binding="{Binding IsCurrentMonth}"
                              Value="False">
@@ -67,6 +46,24 @@
                 <DataTrigger Binding="{Binding IsToday}" Value="True">
                     <Setter Property="BorderBrush" Value="#2563EB"/>
                     <Setter Property="BorderThickness" Value="3"/>
+                </DataTrigger>
+
+                <!-- RED: not enough people -->
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static models:StaffingStatus.NotEnough}">
+                    <Setter Property="Background" Value="#FEE2E2"/>
+                    <Setter Property="BorderBrush" Value="#DC2626"/>
+                </DataTrigger>
+
+                <!-- YELLOW: okay -->
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static models:StaffingStatus.Okay}">
+                    <Setter Property="Background" Value="#FEF3C7"/>
+                    <Setter Property="BorderBrush" Value="#D97706"/>
+                </DataTrigger>
+
+                <!-- GREEN: optimal -->
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static models:StaffingStatus.Optimal}">
+                    <Setter Property="Background" Value="#DCFCE7"/>
+                    <Setter Property="BorderBrush" Value="#16A34A"/>
                 </DataTrigger>
 
             </Style.Triggers>
@@ -192,14 +189,22 @@
                         <StackPanel>
 
                             <TextBlock Text="{Binding DayNumber}"
-                                       FontSize="18"
-                                       FontWeight="Bold"/>
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="#202938"/>
 
-                            <TextBlock Margin="0,12,0,0"
-                                       Text="{Binding EmployeeCount,
-                                           StringFormat='Employees: {0}'}"
-                                       FontSize="12"
-                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding EmployeeCount,
+                                       StringFormat={}{0} employees}"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#374151"
+                               Margin="0,8,0,0"/>
+
+                            <TextBlock Text="{Binding AbsentCount,
+                                       StringFormat={}{0} absent}"
+                               FontSize="11"
+                               Foreground="#6B7280"
+                               Margin="0,3,0,0"/>
 
                         </StackPanel>
 
@@ -210,7 +215,51 @@
 
         </ItemsControl>
 
-        
+        <Border Grid.Row="3"
+                Margin="0,15,0,0"
+                Padding="12"
+                Background="White"
+                BorderBrush="#D5D9E0"
+                BorderThickness="1"
+                CornerRadius="6">
+            <StackPanel>
+                <TextBlock Text="Monthly staffing summary"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           Foreground="#202938"/>
+
+                <TextBlock Text="{Binding IsLoading,
+                                    StringFormat='Loading staffing data: {0}'}"
+                           Margin="0,5,0,0"
+                           Foreground="#6B7280"/>
+
+                <TextBlock Text="{Binding PlanningError}"
+                           Margin="0,5,0,0"
+                           Foreground="#B91C1C"
+                           TextWrapping="Wrap"/>
+
+                <WrapPanel DataContext="{Binding PlanningSummary}"
+                           Margin="0,8,0,0">
+                    <TextBlock Text="{Binding Department,
+                                                StringFormat='Department: {0}'}"
+                               Margin="0,0,20,0"/>
+                    <TextBlock Text="{Binding TotalEmployees,
+                                                StringFormat='Total employees: {0}'}"
+                               Margin="0,0,20,0"/>
+                    <TextBlock Text="{Binding Present,
+                                                StringFormat='Present: {0}'}"
+                               Margin="0,0,20,0"/>
+                    <TextBlock Text="{Binding Absent,
+                                                StringFormat='Absent: {0}'}"
+                               Margin="0,0,20,0"/>
+                    <TextBlock Text="{Binding MinimumPresence,
+                                                StringFormat='Minimum presence: {0}'}"
+                               Margin="0,0,20,0"/>
+                    <TextBlock Text="{Binding MinimumMet,
+                                                StringFormat='Minimum met: {0}'}"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
 
     </Grid>
 
