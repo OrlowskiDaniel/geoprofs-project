@@ -5,21 +5,25 @@ import RequestLeave from "./RequestLeave";
 import UserManagement from "./UserManagement";
 import AuditTrail from "./AuditTrail";
 import LeaveOverview from "./LeaveOverview";
+import LeaveBalance from "./LeaveBalance";
 import { api } from "./api/client";
 
 const rolePermissions = {
   Werknemer: [
     "requestLeave",
     "viewPersonalData",
+    "viewLeaveBalance",
   ],
   Manager: [
     "requestLeave",
     "viewPersonalData",
+    "viewLeaveBalance",
     "checkLeaveRequests",
   ],
   "Office Manager": [
     "requestLeave",
     "viewPersonalData",
+    "viewLeaveBalance",
     "checkLeaveRequests",
     "manageUsers",
     "viewLeaveOverview",
@@ -27,6 +31,7 @@ const rolePermissions = {
   Administrator: [
     "requestLeave",
     "viewPersonalData",
+    "viewLeaveBalance",
     "checkLeaveRequests",
     "manageUsers",
     "viewAuditTrail",
@@ -35,7 +40,6 @@ const rolePermissions = {
 
 function hasPermission(user, permission) {
   if (!user) return false;
-
   return (rolePermissions[user.role] ?? []).includes(permission);
 }
 
@@ -49,6 +53,11 @@ const navigation = [
     label: "Request leave",
     href: "#request-leave",
     permission: "requestLeave",
+  },
+  {
+    label: "My leave balance",
+    href: "#leave-balance",
+    permission: "viewLeaveBalance",
   },
   {
     label: "Leave overview",
@@ -235,6 +244,8 @@ export default function App() {
         <PersonalData />
       ) : activePage === "#request-leave" ? (
         <RequestLeave />
+      ) : activePage === "#leave-balance" ? (
+        <LeaveBalance />
       ) : activePage === "#leave-overview" ? (
         <LeaveOverview />
       ) : activePage === "#audit-trail" ? (

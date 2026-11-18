@@ -44,6 +44,9 @@ export const api = {
     getLeaveRequests: () =>
         request("/leave-requests"),
 
+    getLeaveBalance: () =>
+        request("/leave-balance"),
+
     createLeaveRequest: (data) =>
         request("/leave-requests", {
             method: "POST",
