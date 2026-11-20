@@ -1,11 +1,12 @@
-﻿using System;
+﻿using GeoProfs.Desktop.Common;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace GeoProfs.Desktop.Models;
 
-class Notification : INotifyPropertyChanged
+class Notification : ViewModelBase
 {
     private int _isRead;
 
@@ -50,10 +51,4 @@ class Notification : INotifyPropertyChanged
     [JsonIgnore]
     public bool IsUnread => IsRead == 0;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }
