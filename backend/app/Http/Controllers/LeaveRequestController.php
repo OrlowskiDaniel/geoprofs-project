@@ -291,7 +291,7 @@ class LeaveRequestController extends Controller
         }else{
             $leaveRequest = LeaveRequest::whereHas('user', function ($query) use ($departmentId) {
                 $query->where('department_id', $departmentId);
-            })->where('status_id', 2)->select('start_date', 'end_date')->get();
+            })->where('status_id', 2)->select('user_id','start_date', 'end_date')->get();
 
             return response()->json([
                 'departmentSize' => $users,
