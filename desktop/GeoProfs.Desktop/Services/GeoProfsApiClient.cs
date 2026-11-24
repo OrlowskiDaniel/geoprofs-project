@@ -153,6 +153,34 @@ namespace GeoProfs.Desktop.Services
             await EnsureSuccessAsync(response);
         }
 
+        public async Task<StaffingPlanningResponse> GetPlanningAsync(DateTime date, DateTime? dateEnd = null)
+        {
+            var query =
+                $"manager/planning?date={Uri.EscapeDataString(date.ToString("yyyy-MM-dd"))}";
+
+            if (dateEnd.HasValue)
+            {
+                query +=
+                    $"&date_end={Uri.EscapeDataString(dateEnd.Value.ToString("yyyy-MM-dd"))}";
+            }
+
+            using var response = await _http.GetAsync(query);
+
+            await EnsureSuccessAsync(response);
+
+            var result =
+                await response.Content.ReadFromJsonAsync<StaffingPlanningResponse>(
+                    _jsonOptions);
+
+            if (result == null)
+            {
+                throw new ApiException(
+                    "Planning response was empty or invalid.", 0);
+            }
+
+            return result;
+        }
+
 
         /// <summary>
         /// Rejects a leave request
