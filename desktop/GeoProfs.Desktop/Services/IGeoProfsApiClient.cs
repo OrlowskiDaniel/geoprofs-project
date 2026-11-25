@@ -30,5 +30,9 @@ namespace GeoProfs.Desktop.Services
         // GET /api/manager/planning?date=...&date_end=...
         Task<StaffingPlanningResponse> GetPlanningAsync(DateTime date, DateTime? dateEnd = null);
 
+        Task<List<Notification>> GetManagerNotificationsAsync();
+
+        Task<Notification> MarkNotificationAsReadAsync(int id);
+
     }
 }

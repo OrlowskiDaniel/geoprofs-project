@@ -221,6 +221,29 @@ namespace GeoProfs.Desktop.Services
             await EnsureSuccessAsync(response);
         }
 
+        public async Task<List<Notification>> GetManagerNotificationsAsync()
+        {
+            using var response = await _http.GetAsync("manager/notifications");
+            await EnsureSuccessAsync(response);
+
+            var result = await response.Content.ReadFromJsonAsync<List<Notification>>(_jsonOptions);
+            return result ?? new List<Notification>();
+        }
+
+        public async Task<Notification> MarkNotificationAsReadAsync(int id)
+        {
+            using var response = await _http.PutAsJsonAsync(
+                $"notifications/{id}/read",
+                new { }
+            );
+            await EnsureSuccessAsync(response);
+
+            var result = await response.Content.ReadFromJsonAsync<Notification>(_jsonOptions);
+            return result ?? throw new ApiException(
+                "Mark-as-read response was empty or invalid.",
+                (int)response.StatusCode
+            );
+        }
 
 
         private static async Task EnsureSuccessAsync(
