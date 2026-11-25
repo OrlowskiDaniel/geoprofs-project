@@ -10,6 +10,8 @@ namespace GeoProfs.Desktop.ViewModels
         private readonly IGeoProfsApiClient _apiClient;
 
         private readonly PlanningSettings _planningSettings;
+        public NotificationsViewModel NotificationState { get; }
+
         private object? _currentView;
         public object? CurrentView
         {
@@ -32,6 +34,7 @@ namespace GeoProfs.Desktop.ViewModels
             _apiClient = apiClient;
 
             _planningSettings = new PlanningSettings();
+            NotificationState = new NotificationsViewModel(_apiClient);
 
             // Pass the parameter (obj) directly to the Navigate method
             NavigateCommand = new RelayCommand(obj => Navigate(obj as string));
@@ -53,6 +56,10 @@ namespace GeoProfs.Desktop.ViewModels
                     break;
                 case "Planning":
                     CurrentView = new CalendarViewModel(_planningSettings, _apiClient);
+                    break;
+                case "Notifications":
+                    CurrentView = NotificationState;
+                    NotificationState.LoadCommand.Execute(null);
                     break;
 
                 case "Settings":

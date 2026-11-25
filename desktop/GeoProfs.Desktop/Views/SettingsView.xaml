@@ -255,8 +255,6 @@
 
             </Border>
 
-            <!-- notification settings -->
-
             <Border Background="White"
                     CornerRadius="8"
                     Padding="25">
