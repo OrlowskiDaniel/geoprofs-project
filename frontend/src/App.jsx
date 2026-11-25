@@ -6,6 +6,7 @@ import UserManagement from "./UserManagement";
 import AuditTrail from "./AuditTrail";
 import LeaveOverview from "./LeaveOverview";
 import LeaveBalance from "./LeaveBalance";
+import DepartmentPlanning from "./DepartmentPlanning";
 import { api } from "./api/client";
 
 const rolePermissions = {
@@ -13,17 +14,20 @@ const rolePermissions = {
     "requestLeave",
     "viewPersonalData",
     "viewLeaveBalance",
+    "viewDepartmentPlanning",
   ],
   Manager: [
     "requestLeave",
     "viewPersonalData",
     "viewLeaveBalance",
+    "viewDepartmentPlanning",
     "checkLeaveRequests",
   ],
   "Office Manager": [
     "requestLeave",
     "viewPersonalData",
     "viewLeaveBalance",
+    "viewDepartmentPlanning",
     "checkLeaveRequests",
     "manageUsers",
     "viewLeaveOverview",
@@ -32,6 +36,7 @@ const rolePermissions = {
     "requestLeave",
     "viewPersonalData",
     "viewLeaveBalance",
+    "viewDepartmentPlanning",
     "checkLeaveRequests",
     "manageUsers",
     "viewAuditTrail",
@@ -58,6 +63,11 @@ const navigation = [
     label: "My leave balance",
     href: "#leave-balance",
     permission: "viewLeaveBalance",
+  },
+  {
+    label: "Department planning",
+    href: "#department-planning",
+    permission: "viewDepartmentPlanning",
   },
   {
     label: "Leave overview",
@@ -246,6 +256,8 @@ export default function App() {
         <RequestLeave />
       ) : activePage === "#leave-balance" ? (
         <LeaveBalance />
+      ) : activePage === "#department-planning" ? (
+        <DepartmentPlanning />
       ) : activePage === "#leave-overview" ? (
         <LeaveOverview />
       ) : activePage === "#audit-trail" ? (
