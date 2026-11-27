@@ -10,6 +10,11 @@
 
     <Window.Resources>
         <!-- DataTemplate maps ViewModel directly to View -->
+
+        <DataTemplate DataType="{x:Type vm:NotificationsViewModel}">
+            <views:NotificationsView />
+        </DataTemplate>
+        
         <DataTemplate DataType="{x:Type vm:ApprovalsViewModel}">
             <views:ApprovalsView />
         </DataTemplate>
@@ -117,13 +122,22 @@
                         </StackPanel>
                     </RadioButton>
 
-                    <!-- Alerts -->
                     <RadioButton Style="{StaticResource TeamsNavButton}" GroupName="Nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="Alerts">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="&#xEA8F;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                            <TextBlock Text="Alerts" FontSize="11"/>
-                        </StackPanel>
+                                 Command="{Binding NavigateCommand}" CommandParameter="Notifications">
+                        <Grid Width="72" Height="42">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="&#xEA8F;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                <TextBlock Text="Notifications" FontSize="11"/>
+                            </StackPanel>
+                            <Ellipse Width="9" Height="9"
+                                     Fill="#D13438"
+                                     Stroke="#201F1E"
+                                     StrokeThickness="1"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Top"
+                                     Margin="0,0,14,0"
+                                     Visibility="{Binding NotificationState.HasUnreadNotifications, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
                     </RadioButton>
 
                     <!-- Export -->

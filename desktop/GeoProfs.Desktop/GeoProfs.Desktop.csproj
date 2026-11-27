@@ -8,4 +8,8 @@
     <RootNamespace>GeoProfs.Desktop</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="docs\" />
+  </ItemGroup>
+
 </Project>
